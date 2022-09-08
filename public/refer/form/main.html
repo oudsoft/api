@@ -1,0 +1,96 @@
+<link href="../case/css/menu.css" rel="stylesheet">
+<div class="header">
+  <div id="Menu"></div>
+</div>
+
+<div class="row">
+  <div class="column side"></div>
+
+  <div class="column middle">
+    <div class="mainfull"></div>
+  </div>
+</div>
+
+<div class="footer">
+  <h4>Footer</h4>
+</div>
+
+<script>
+	console.log('So Good.');
+</script>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+/* Header/Blog Title */
+.header {
+  padding: 5px;
+  text-align: center;
+  background: white;
+}
+
+.header h1, h2{
+  font-size: 50px;
+  font-family: THSarabunNew;
+  font-weight: bold;
+}
+
+/* Clear floats after the columns */
+.row {
+	min-height: 320px;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.mainfull {
+  display: none;
+  min-height: 780px;
+  width: 100%;
+  font-family: THSarabunNew;
+  font-size: 24px;
+  font-weight: normal;
+}
+
+/* Create three unequal columns that floats next to each other */
+.column {
+  float: left;
+  padding: 10px;
+  font-family: THSarabunNew;
+  font-size: 24px;
+  font-weight: normal;
+}
+
+/* Left and right column */
+.column.side {
+  width: 0%;
+}
+
+/* Middle column */
+.column.middle {
+  width: 100%;
+}
+
+/* Footer */
+.footer {
+  padding: 5px;
+  text-align: center;
+  background: #ddd;
+  margin-top: 10px;
+  font-size: 24px;
+  font-family: THSarabunNew;
+  font-weight: normal;
+}
+
+/* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
+@media screen and (max-width: 600px) {
+  .column.side, .column.middle {
+    width: 100%;
+  }
+}
+</style>

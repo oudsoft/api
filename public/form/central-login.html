@@ -1,0 +1,263 @@
+<!-- The Modal -->
+<div id="id01" class="modal">
+
+  <span onclick="document.getElementById('id01').style.display='none'" class="close" title="Close Modal">&times;</span>
+  <!-- Modal Content -->
+  <div class="modal-content animate" id="LoginForm">
+
+    <div class="imgcontainer">
+      <img src="/images/avatar-icon.png" alt="Avatar" class="avatar">
+    </div>
+
+    <div class="container">
+      <label for="username"><b>Username</b></label>
+      <input type="text" placeholder="Enter Username" id="username" required>
+
+      <label for="password"><b>Password</b></label>
+      <input type="password" placeholder="Enter Password" id="password" required>
+
+      <input type="checkbox" id="RememberMe" value="1"/>
+      <label for="rememberme">จดจำบัญชีใช้งานของฉันไว้ในอุปกรณ์นี้</label>
+
+      <button type="button" id="LoginCmd">Login</button>
+    </div>
+
+    <div class="container" style="background-color:#f1f1f1; text-align: center; padding: 1px 0px;">
+      <button type="button" id="CloseCmd" class="cancelbtn">Cancel</button>
+      <span>  </span>
+      <button type="button" id="ResetPwdCmd" class="resetbtn">ฉันลืมรหัสผ่าน</button>
+      <span>  </span>
+      <button type="button" id="OpenRegisterFormCmd" class="resetbtn">ลงทะเบียนใหม่</button>
+    </div>
+  </div>
+
+  <div class="modal-content animate" id="ResetPwdForm">
+    <div class="imgcontainer">
+      <img src="/images/email-icon.png" alt="Avatar" class="avatar">
+    </div>
+    <div class="container">
+      <label for="email"><b>Your Email</b></label>
+      <input type="text" placeholder="Enter Your Email Address" name="email" id="email" required>
+    </div>
+    <div class="container" style="background-color:#f1f1f1; text-align: center;">
+      <button type="button" id="ResetCmd">Reset</button>
+      <button type="button" id="CancelCmd" class="cancelbtn">Cancel</button>
+    </div>
+  </div>
+
+  <div class="modal-content animate" id="RegisterForm-Username">
+    <div class="imgcontainer">
+      <img src="/images/avatar-icon.png" alt="Avatar" class="avatar">
+    </div>
+    <div class="container">
+      <label for="username1"><b>Username</b></label>
+      <input type="text" placeholder="Enter Username" id="username1" required>
+
+      <label for="password1"><b>Password</b></label>
+      <input type="password" placeholder="Enter Password" id="password1" required>
+
+      <label for="password2"><b>Retry Password</b></label>
+      <input type="password" placeholder="Enter Password again" id="password2" required>
+    </div>
+    <div class="container" style="background-color:#f1f1f1; text-align: center;">
+      <button type="button" id="CheckUsernameCmd">Check Username</button>
+      <button type="button" id="RegisterUsernameCancelCmd" class="cancelbtn">Cancel</button>
+    </div>
+  </div>
+
+  <div class="modal-content animate" id="RegisterForm-Info">
+    <div class="imgcontainer">
+      <img src="/images/avatar-icon.png" alt="Avatar" class="avatar">
+    </div>
+    <div class="container">
+      <label for="NameTH"><b>ชื่อ (ภาษาไทย)</b></label>
+      <input type="text" placeholder="Enter Name TH" id="NameTH" required>
+
+      <label for="LastNameTH"><b>นามสกุล (ภาษาไทย)</b></label>
+      <input type="text" placeholder="Enter LastName TH" id="LastNameTH" required>
+
+      <label for="NameEN"><b>ชื่อ (ภาษาอังกฤษ)</b></label>
+      <input type="text" placeholder="Enter Name EN" id="NameEN" required>
+
+      <label for="LastNameEN"><b>นามสกุล (ภาษาอังกฤษ)</b></label>
+      <input type="text" placeholder="Enter LastName EN" id="LastNameEN" required>
+
+      <label for="Email"><b>อีเมล์</b></label>
+      <input type="text" placeholder="Enter Email" id="Email" required>
+
+      <label for="Phone"><b>เบอร์โทรศัพท์</b></label>
+      <input type="text" placeholder="Enter Phone No." id="Phone" required>
+
+      <label for="LineID"><b>ไลน์ไอดี</b></label>
+      <input type="text" placeholder="Enter Line ID" id="LineID" required>
+    </div>
+    <div class="container" style="background-color:#f1f1f1; text-align: center;">
+      <button type="button" id="RegisterCmd">Register</button>
+      <button type="button" id="RegisterInfoCancelCmd" class="cancelbtn">Cancel</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Get the modal
+  var modal = document.getElementById('id01');
+
+  // When the user clicks anywhere outside of the modal, close it
+  /*
+  window.onclick = function(event) {
+    if (event.target == modal) {
+      modal.style.display = "none";
+    }
+  }
+  */
+
+  var loginForm = document.getElementById('LoginForm');
+  var resetPwdForm = document.getElementById('ResetPwdForm');
+  var registerUsernameForm = document.getElementById('RegisterForm-Username');
+  var registerInfoForm = document.getElementById('RegisterForm-Info');
+  resetPwdForm.style.display='none';
+  registerInfoForm.style.display='none';
+  registerUsernameForm.style.display='none';
+  var resetPwdCmd = document.getElementById('ResetPwdCmd');
+  var closeCmd = document.getElementById('CloseCmd');
+  closeCmd.addEventListener("click", function() {
+    resetPwdCmd.style.display='none';
+    document.getElementById('id01').style.display='none';
+  });
+
+  var back = function() {
+    document.getElementById('id01').style.display='block';
+    loginForm.style.display='block';
+    resetPwdForm.style.display='none';
+    registerUsernameForm.style.display='none';
+    registerInfoForm.style.display='none';
+  }
+
+  var cancelCmd = document.getElementById('CancelCmd');
+  cancelCmd.addEventListener("click", back);
+  var cancelUsenameCmd = document.getElementById('RegisterUsernameCancelCmd');
+  cancelUsenameCmd.addEventListener("click", back);
+  var cancelInfoCmd = document.getElementById('RegisterInfoCancelCmd');
+  cancelInfoCmd.addEventListener("click", back);
+</script>
+<style>
+  /* The Modal (background) */
+  .modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    padding-top: 60px;
+  }
+
+  /* Modal Content/Box */
+  .modal-content {
+    background-color: #fefefe;
+    margin: 1px auto; /* 15% from the top and centered */
+    border: 1px solid #888;
+    width: 30%; /* Could be more or less, depending on screen size */
+  }
+
+  input[type=text], input[type=password] {
+    width: 100%;
+    padding: 8px 5px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    font-family: EkkamaiStandard;
+    font-size: 20px;
+  }
+  /* Set a style for all buttons */
+  button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 5px 5px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+  }
+
+  button:hover {
+    opacity: 0.8;
+  }
+  /* Extra styles for the cancel button */
+  .cancelbtn {
+    width: auto;
+    padding: 5px 5px;
+    background-color: #f44336;
+  }
+
+  .resetbtn {
+    width: auto;
+    padding: 5px 5px;
+    background-color: blue;
+    display: none;
+  }
+
+  /* Center the image and position the close button */
+  .imgcontainer {
+    width: 100%;
+    padding: 0px;
+    text-align: center;
+    top: -10px;
+    position: relative;
+    display: inline-block;
+  }
+
+  img.avatar {
+    width: 35%;
+    border-radius: 50%;
+  }
+
+  .container {
+    padding: 4px;
+  }
+
+  span.psw {
+    float: right;
+    padding-top: 16px;
+  }
+
+  /* The Close Button */
+  .close {
+    /* Position it in the top right corner outside of the modal */
+    position: absolute;
+    right: 15px;
+    top: 0;
+    color: #000;
+    font-size: 35px;
+    font-weight: bold;
+  }
+
+  /* Close button on hover */
+  .close:hover,
+  .close:focus {
+    color: red;
+    cursor: pointer;
+  }
+
+  /* Add Zoom Animation */
+  .animate {
+    -webkit-animation: animatezoom 0.6s;
+    animation: animatezoom 0.6s
+  }
+
+  @-webkit-keyframes animatezoom {
+    from {-webkit-transform: scale(0)}
+    to {-webkit-transform: scale(1)}
+  }
+
+  @keyframes animatezoom {
+    from {transform: scale(0)}
+    to {transform: scale(1)}
+  }
+</style>

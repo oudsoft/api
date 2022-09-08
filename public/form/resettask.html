@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link href="icon.png" rel="shortcut icon" type="image/x-icon"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rad Connext Report Design</title>
+    <link href="../lib/jquery-ui.min.css" rel="stylesheet">
+    <script type="text/javascript" src="../lib/jquery.js"></script>
+    <script type="text/javascript" src="../lib/jquery-ui.min.js"></script>
+  	<script type="text/javascript" src="../lib/notify.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <label for="psw1"><b>New Password</b></label>
+      <input type="password" id="psw1" required>
+
+      <label for="psw2"><b>Retry New Password</b></label>
+      <input type="password" id="psw2" required>
+
+      <button type="button" id="ResetSubmitCmd">Reset</button>
+
+      <input type="hidden" id="email"/>
+      <input type="hidden" id="username"/>
+    </div>
+
+  </body>
+</html>
+
+<script type="text/javascript">
+  function urlQueryToObject(url) {
+  	let result = url.split(/[?&]/).slice(1).map(function(paramPair) {
+  				return paramPair.split(/=(.+)?/).slice(0, 2);
+  		}).reduce(function (obj, pairArray) {
+  				obj[pairArray[0]] = pairArray[1];
+  				return obj;
+          let password2 = $('#psw2').val();
+  		}, {});
+  	return result;
+  }
+
+  function doCallResetPwd(params){
+    return new Promise(function(resolve, reject) {
+      let resetPwdUrl = '/api/resettask/reset';
+      $.post(resetPwdUrl, params, function(response){
+  			resolve(response);
+  		});
+    });
+  }
+
+  $(document).ready(function() {
+    let queryObj = urlQueryToObject(window.location.href);
+    if (queryObj.taskId) {
+      $('#email').val(queryObj.taskId);
+      $('#username').val(queryObj.username);
+
+      $('#ResetSubmitCmd').on('click', (evt)=>{
+        let password1 = $('#psw1').val();
+        if (password1 !== '') {
+          let password2 = $('#psw2').val();
+          if (password2 !== '') {
+            if (password1 === password2) {
+              $("#password1").css("border","");
+              $("#password2").css("border","");
+              let email = $('#email').val();
+              let username = $('#username').val();
+              let rqParams = {email: email, username: username, password: password1}
+              doCallResetPwd(rqParams).then((resetRes)=>{
+                if (resetRes.Task.email) {
+                  $.notify('คุณรีเซ็ตรัสผ่านสำเร็จ', 'success');
+                } else {
+                  $.notify('คุณรีเซ็ตรัสผ่านไม่สำเร็จ เนื่องจากเลยเวลาที่กำหนดไว้ 1 ชม.หลังจากได้รับอีเมล์', 'error');
+                }
+                $('.container').empty();
+                let gotoLogin = $('<a href="../index.html">กลับไปหน้า Login</a>')
+                $('.container').append($(gotoLogin));
+              })
+            } else {
+              $("#password1").css("border","2px solid red");
+              $("#password2").css("border","2px solid red");
+              $.notify('New Password กับ Retry New Password ต้องเหมือนกัน', 'error');
+            }
+          } else {
+            $("#password2").css("border","2px solid red");
+            $.notify('Retry New Password ต้องไม่ว่าง', 'error');
+          }
+        } else {
+          $("#password1").css("border","2px solid red");
+          $.notify('New Password ต้องไม่ว่าง', 'error');
+        }
+      });
+    } else {
+      $('#psw1').hide();
+      $('#psw2').hide();
+      $('#ResetSubmitCmd').hide();
+      let errorMsgBox = $('<div></div>');
+      $(errorMsgBox).text('Wrong Request!!!');
+      $(errorMsgBox).css({'background-color': 'red', 'color': 'white'});
+      $(errorMsgBox).appendTo($('.container'));
+    }
+  });
+
+
+</script>
+
+<style>
+  @font-face { font-family: EkkamaiStandard; src: url("../font/EkkamaiStandard-Light.ttf");}
+  body, button, input[type=text], input[type=password] {
+    font-family: EkkamaiStandard;
+    font-size: 24px;
+    font-weight: normal;
+  }
+
+  input[type=text], input[type=password] {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+  }
+
+  /* Set a style for all buttons */
+  button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+  }
+
+  button:hover {
+    opacity: 0.8;
+  }
+
+  .container {
+    padding: 200px 200px;
+  }
+
+  /* Add Zoom Animation */
+  .animate {
+    -webkit-animation: animatezoom 0.6s;
+    animation: animatezoom 0.6s
+  }
+
+  @-webkit-keyframes animatezoom {
+    from {-webkit-transform: scale(0)}
+    to {-webkit-transform: scale(1)}
+  }
+
+  @keyframes animatezoom {
+    from {transform: scale(0)}
+    to {transform: scale(1)}
+  }
+
+</style>

@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link href="../favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Say Hello</title>
+    <script type="text/javascript" src="../lib/jquery.js"></script>
+    <script type="text/javascript" src="../lib/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="/shop/lib/plugin/jquery-radutil-plugin.js"></script>
+    <link href="../lib/jquery-ui.min.css" rel="stylesheet">
+    <!--
+  	<script type="text/javascript" src="bundle.js"></script>
+    -->
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+</html>
+<style>
+  @font-face { font-family: EkkamaiStandard; src: url("../font/EkkamaiStandard-Light.ttf");}
+  body {font-family: EkkamaiStandard;}
+</style>
+<script type="text/javascript">
+/*****************************************************/
+const doCreateShareCmd = function(myLiffUrl){
+  //let myLiffUrl = 'https://liff.line.me/1655999531-z5xnKvpR?id=' + id;
+  let lineShareIconCmd = $('<img src="' + radconnextUrl + '/images/wide-default.png" style="cursor: pointer; width: 100px; height: auto;"/>');
+  $(lineShareIconCmd).on('click', (evt)=>{
+    let linkTarget = 'https://social-plugins.line.me/lineit/share?url=' + myLiffUrl;
+    window.open(linkTarget, '_blank');
+  });
+  return $(lineShareIconCmd);
+}
+
+const doCreateDownloadCmd = function(imgSrc){
+  let downloadIconCmd = $('<img src="' + radconnextUrl + '/images/download-icon-2.png" style="cursor: pointer; margin-left: 10px; width: 100px; height: auto;"/>');
+  $(downloadIconCmd).on('click', (evt)=>{
+    let imgPaths = imgSrc.split('/');
+    let saveFileName = imgPaths[imgPaths.length-1];
+    let pom = document.createElement('a');
+    pom.setAttribute('href', imgSrc);
+    pom.setAttribute('download', saveFileName);
+    pom.click();
+  });
+  return $(downloadIconCmd);
+}
+const doCreateBackCmd = function(backUrl){
+  let backIconCmd = $('<img src="' + radconnextUrl + '/images/back-icon.png" style="cursor: pointer; margin-left: 10px; width: 50px; height: auto;"/>');
+  $(backIconCmd).on('click', (evt)=>{
+    window.location.replace(backUrl);
+  });
+  return $(backIconCmd);
+}
+const doCreatePlayCmd = function(imageLists, seriesId, playCmdClickCallback){
+  let playIconCmd = $('<img src="' + radconnextUrl + '/images/play-icon.png" style="cursor: pointer; margin-left: 10px; width: 100px; height: auto;"/>');
+  $(playIconCmd).on('click', (evt)=>{
+    playCmdClickCallback(evt, seriesId, imageLists);
+  });
+  return $(playIconCmd);
+}
+const doCreateSponsorBox = function(imageTitle, linkTo){
+  let sponsorBoard = $('<div style="cursor: pointer; width: 100%; height: 70px; display: block; text-align: center;"></div>');
+  /*
+  $(sponsorBoard).on('click', (evt)=>{
+    $(sponsorBoard).parent().focus();
+    window.open(linkTo, '_blank');
+  });
+  $(sponsorBoard).on('load', (evt)=>{
+    let img = $(evt.currentTarget);
+    $(img).center($(sponsorBoard).parent());
+  });
+  */
+  return $(sponsorBoard);
+}
+/*****************************************************/
+  //const radconnextUrl = 'https://radconnext.info';
+  const radconnextUrl = 'https://' + window.location.hostname;
+  const usrUploadPath = '/img/usr/upload/share';
+  const usrSeriesRootPath = '/img/usr/upload';
+
+  const doCallListUsrUpload = function(){
+    return new Promise(function(resolve, reject) {
+      let callEndPoint = '/api/usr/upload/share/list';
+      let params = {};
+      $.post(callEndPoint, params, function(data){
+        resolve(data);
+      }).fail(function(error) {
+        reject(error);
+      });
+    });
+  }
+  const doCallListSeries = function(seriesUrl) {
+    return new Promise(function(resolve, reject) {
+      let params = {};
+      $.post(seriesUrl, params, function(data){
+        resolve(data);
+      }).fail(function(error) {
+        reject(error);
+      });
+    });
+  }
+
+  const doCallReadViewCounter = function(params){
+    return new Promise(function(resolve, reject) {
+      let readUrl = '/api/action/counter/read/view';
+      $.post(readUrl, params, function(data){
+        resolve(data);
+      }).fail(function(error) {
+        reject(error);
+      });
+    });
+  }
+
+  const doCallUpdateViewCounter = function(params){
+    return new Promise(function(resolve, reject) {
+      let readUrl = '/api/action/counter/update/view';
+      $.post(readUrl, params, function(data){
+        resolve(data);
+      }).fail(function(error) {
+        reject(error);
+      });
+    });
+  }
+
+  const doCreateUsrUploadThumb = function(usrUploadList){
+    return new Promise(async function(resolve, reject) {
+      let thumbWrapper = $('<div id ="ThumbBox" style="position: relative; width: 100%;"></div>');
+      await usrUploadList.forEach((item, i) => {
+        let thumbPrev = doCreateThumb(item);
+        $(thumbWrapper).append($(thumbPrev));
+      });
+      resolve($(thumbWrapper));
+    });
+  }
+
+  const doCreateThumb = function(imageFile){
+    var imageFileLower = imageFile.toLowerCase();
+    var n = imageFileLower.indexOf("jpg");
+    if (n >= 0){
+      let src = usrUploadPath + '/' + imageFile;
+      let thumb = $('<img id="ImgBox" width="65px" height="auto" src="' + src + '"/>');
+      $(thumb).css({'cursor': 'pointer', 'padding': '4px', 'border': '2px solid #ddd', 'margin': '4px'});
+      $(thumb).on('click', (evt)=> {
+        let imageCodes = imageFile.split('.');
+        let openLink = '/share/?id=' + imageCodes[0];
+        window.open(openLink, '_blank');
+      });
+      return $(thumb);
+    } else {
+      return;
+    }
+  }
+  const doCreateImagesSeriesThumb = function(seriesId, listImages){
+    return new Promise(async function(resolve, reject) {
+      let thumbWrapper = $('<div style="position: relative; width: 100%;"></div>');
+      await listImages.forEach((item, i) => {
+        let thumbPrev = doCreateImageThumb(seriesId, item);
+        $(thumbWrapper).append($(thumbPrev));
+      });
+      resolve($(thumbWrapper));
+    });
+  }
+  const doCreateImageThumb = function(seriesId, imageFile){
+    var imageFileLower = imageFile.toLowerCase();
+    var n = imageFileLower.indexOf("jpg");
+    var m = imageFileLower.indexOf("mp4");
+    if (n >= 0){
+      let src = usrSeriesRootPath + '/' + seriesId + '/' + imageFile;
+      let thumb = $('<img width="65px" height="auto" src="' + src + '" title="' + imageFile + '"/>');
+      $(thumb).css({'cursor': 'pointer', 'padding': '4px', 'border': '2px solid #ddd', 'margin': '4px'});
+      $(thumb).on('click', (evt)=> {
+        let imageCode = imageFile.split('.');
+        let openUrl = /*radconnextUrl +*/ '/share/?seriesId=' + seriesId + 'k!' + imageCode[0];
+        window.open(openUrl, '_blank');
+      })
+      return $(thumb);
+    } else if (m >= 0){
+      let thumb = $('<img width="65px" height="auto" src="/images/start-play-icon.png"/>');
+      $(thumb).css({'cursor': 'pointer', 'padding': '4px', 'border': '2px solid #ddd', 'margin': '4px'});
+      $(thumb).on('click', (evt)=> {
+        let clipCode = imageFile.split('.');
+        let openUrl = /*radconnextUrl +*/ '/share/?seriesId=' + seriesId + 'k!' + clipCode[0];
+        window.open(openUrl, '_blank');
+      })
+      return $(thumb);
+    } else {
+      return;
+    }
+  }
+
+  Array.prototype.random = function () {
+    return this[Math.floor((Math.random()*this.length))];
+  }
+
+  File.prototype.toObject = function () {
+    return Object({
+    lastModified: parseInt(this.lastModified),
+    lastModifiedDate: String(this.lastModifiedDate),
+    name: String(this.name),
+    size: parseInt(this.size),
+    type: String(this.type)
+    })
+  }
+
+  FileList.prototype.toArray = function () {
+    return Array.from(this).map(function (file) {
+      return file.toObject()
+    })
+  }
+
+  $.fn.center = function (parent) {
+     let leftPos = ($(parent).width() - this.width()) / 2;
+     let topPos =  ($(parent).height() - this.height()) / 2;
+     this.css("margin-left", leftPos  + "px");
+     this.css("margin-top", topPos  + "px");
+     return this;
+  }
+
+  const doCreateSlidePlayOptionForm = function(){
+    let wrapperBox = $('<div></div>');
+    let closeOrderTable = $('<table width="100%" cellspacing="0" cellpadding="0" border="0"></table>');
+    let dataRow = $('<tr></tr>').css({'height': '40px'});
+    $(dataRow).append($('<td width="40%" align="left"><b>Delay</b></td>'));
+    let delayInput = $('<input id="DelayTime" type="number"/><span> วินาที</span>').css({'width': '80px'}).val(playOptions.delay);
+    let delayInputCell = $('<td align="left"></td>');
+    $(delayInputCell).append($(delayInput))
+    $(dataRow).append($(delayInputCell));
+    $(closeOrderTable).append($(dataRow));
+    dataRow = $('<tr></tr>').css({'height': '40px'});
+    $(dataRow).append($('<td align="left"><b>Mode</b></td>'));
+    let modeSelector = $('<select></select>');
+    $(modeSelector).append($('<option value="random">Random</option>'));
+    $(modeSelector).append($('<option value="normal">Normal</option>'));
+    $(modeSelector).val(playOptions.mode);
+    let modeSelectorCell = $('<td align="left"></td>');
+    $(modeSelectorCell).append($(modeSelector));
+    $(dataRow).append($(modeSelectorCell));
+    $(closeOrderTable).append($(dataRow));
+    dataRow = $('<tr></tr>').css({'height': '40px'});
+    $(dataRow).append($('<td align="left"><b>Image Size</b></td>'));
+    let imageSizeInput = $('<input id="ImageSize" type="number"/><span> px</span>').css({'width': '80px'}).val(playOptions.imageSize);
+    let imageSizeInputCell = $('<td align="left"></td>');
+    $(imageSizeInputCell).append($(imageSizeInput))
+    $(dataRow).append($(imageSizeInputCell));
+    $(closeOrderTable).append($(dataRow));
+    dataRow = $('<tr></tr>').css({'height': '40px'});
+    $(dataRow).append($('<td align="left"><b>Local File</b></td>'));
+    let fileChooserCmd = $('<input id="FileChoosor" type="button" value="เลือกภาพ ..."/>').css({'width': '180px'});
+    $(fileChooserCmd).on('click', (evt)=>{
+      let fileChooser = doCreateFileChooser((imgFiles)=>{
+        imageFiles = imgFiles;
+        maximum = imageFiles.length - 1;
+        currentPlaySportIndex = 0;
+        doCreateMySponsor();
+      });
+      $(fileChooser).click();
+    });
+    let fileChoosorCell = $('<td align="left"></td>');
+    $(fileChoosorCell).append($(fileChooserCmd));
+    $(dataRow).append($(fileChoosorCell));
+    $(closeOrderTable).append($(dataRow));
+    return $(wrapperBox).append($(closeOrderTable));
+  }
+
+  const doOpenSettingForm = function(evt, callback){
+    const customerDlgContent = doCreateSlidePlayOptionForm();
+    $(customerDlgContent).css({'margin-top': '10px'});
+    const customerformoption = {
+      title: 'ตั้งค่าเล่นสไลด์',
+      msg: $(customerDlgContent),
+      width: '520px',
+      onOk: async function(evt) {
+        playOptions = {
+          delay: Number($(customerDlgContent).find('#DelayTime').val()),
+          mode: $(customerDlgContent).find('select').val(),
+          imageSize: Number($(customerDlgContent).find('#ImageSize').val())
+        }
+        //console.log(playOptions);
+        customerFormBoxHandle.closeAlert();
+        callback(playOptions);
+      },
+      onCancel: function(evt){
+        customerFormBoxHandle.closeAlert();
+      }
+    }
+    let customerFormBoxHandle = $('body').radalert(customerformoption);
+  }
+
+  /*****************************************************/
+  const defaultTitle = 'Rad Connext Share';
+
+  const queryString = decodeURIComponent(window.location.search).replace("?liff.state=", "");
+  const params = new URLSearchParams(queryString);
+  const id = params.get('id');
+
+  const sponsorBox = $('<div style="position: relative; min-height: 170px; width: 100%; text-align: center; border: 2px solid #ddd;" tabindex="1"></div>');
+  const linkTo = radconnextUrl + '/share/?seriesId=sponsor-001';
+  const imageTitleUrl = radconnextUrl + '/img/usr/upload/sponsor-001/';
+  const editPlaySettingCmd = $('<img src="../images/tools-icon.png"/>').css({'position': 'absolute', 'width': '35px', 'height': 'auto', 'cursor': 'pointer', 'right': '2px', 'bottom': '2px', 'display': 'none', 'z-index': '21'});
+  $(editPlaySettingCmd).attr('title', 'ตั้งค่า');
+  $(sponsorBox).hover(()=>{
+    $(editPlaySettingCmd).show();
+  },()=>{
+    $(editPlaySettingCmd).hide();
+  });
+
+  let playOptions = {
+    delay: 7,
+    mode: 'normal',
+    imageSize: 330
+  }
+
+  let shareBox = $('<div id="ShareCmdBox" style="position: relative; width: 100%; text-align: center; top: 25px;"></div>');
+  let myLiffUrl = undefined;
+  let imgSrc = undefined;
+  if (id != null && id != '') {
+    //เปิดรูปที่ root
+    myLiffUrl = radconnextUrl + '/share/?id=' + id;
+    imgSrc = usrUploadPath + '/' + id + '.jpg';
+    let shareCmd = doCreateShareCmd(myLiffUrl);
+    $(shareBox).append($(shareCmd));
+    let downloadCmd = doCreateDownloadCmd(imgSrc);
+    $(shareBox).append($(downloadCmd));
+    //let playCmd = doCreatePlayCmd();
+    //$(shareBox).append($(playCmd));
+    //let imgView = $('<img width="100%" height="auto"/>');
+    //$(imgView).attr('src', imgSrc);
+
+
+    let imgView = new Image();
+    imgView.src = imgSrc;
+
+    //let img = $('<img src="' + src + '" width="100%" height="auto" style="padding: 4px; border: 2px solid grey;"/>');
+    imgView.onload = function() {
+      if (this.width > screen.width) {
+        $(imgView).css({'width': '100%'});
+      }
+    };
+
+    $(imgView).css({'margin-top': '50px'});
+
+    $('#app').append($(imgView)).css({'text-align': 'center'});
+    $('#app').append($(shareBox));
+    //$('#app').prepend($(thumbsWrapper));
+    $('#app').prepend($(sponsorBox));
+    //$('#app').find('img').center($(sponsorBox));
+  } else {
+    let seriesIdParam = params.get('seriesId');
+    if (seriesIdParam){
+      let fakeSeriesId = seriesIdParam.split('k!');
+      const seriesId = fakeSeriesId[0];
+      //const seriesId = params.get('seriesId');
+      //const conId = params.get('conId');
+      const conId = fakeSeriesId[1];
+      if (seriesId != null && seriesId != '') {
+        if (conId != null && conId != '') {
+          let seriesPath = '/share/?seriesId=' + seriesId;
+          let conPath = seriesPath  + 'k!' + conId; // <- PARAMETER ตัวที่สอง web browser ของ line ไม่รับ ทำให้เปิดแชร์เฉพาะรูปไม่ได้
+          let shareUrl = radconnextUrl + conPath;
+          let shareCmd = doCreateShareCmd(shareUrl);
+          let backCmd = doCreateBackCmd(seriesPath);
+
+          if (seriesId !== 'mp4'){
+            //เปิดรูปของซีรีส์
+            let view = undefined;
+            let imageFileName = conId + '.jpg';
+            let counterParams = {seriesId: seriesId, contentId: conId};
+            //doCallUpdateViewCounter(counterParams).then(async (updateRes)=>{
+              //console.log(updateRes);
+              //let readRes = await doCallReadViewCounter(counterParams);
+              //console.log(readRes);
+              view = $('<div style="width: 100%; text-align: center;"></div>');
+              let bottomBar = $('<div style="width: 100%; text-align: center;"></div>');
+              let src = usrSeriesRootPath + '/' + seriesId + '/' + imageFileName;
+
+
+              let img = new Image();
+              img.src = src;
+
+              //let img = $('<img src="' + src + '" width="100%" height="auto" style="padding: 4px; border: 2px solid grey;"/>');
+              img.onload = function() {
+                if (this.width > screen.width) {
+                  $(img).css({'width': '100%'});
+                }
+              };
+
+              $(img).css({'margin-top': '50px'});
+
+              let downloadCmd = doCreateDownloadCmd(src);
+              $(bottomBar).append($(downloadCmd)).append($(shareCmd)).append($(backCmd));
+              $(view).append($(sponsorBox)).append($(img)).append($(bottomBar))
+
+              //let newWindow = window.open();
+              //$(newWindow.document.body).append($(view));
+
+              $('#app').empty().append($(view));
+            //});
+
+          } else {
+            // play clip ใน mp4
+            let clipFileName = conId + '.mp4';
+            view = $('<div style="width: 100%; text-align: center;"></div>');
+            let bottomBar = $('<div style="width: 100%; text-align: center;"></div>');
+            let src = usrSeriesRootPath + '/' + seriesId + '/' + clipFileName;
+            let downloadCmd = doCreateDownloadCmd(src);
+            let localVideo = document.createElement('video');
+            localVideo.id = 'LocalVideo';
+            localVideo.style.position = 'relative';
+            localVideo.style.display = 'inline-block';
+            localVideo.style.width = '320px';
+            localVideo.style.height = 'auto';
+            localVideo.style.border = '1px solid green';
+            localVideo.style.padding = '2px';
+            localVideo.controls = true;
+            localVideo.autoplay = true;
+            localVideo.crossorigin = "anonymous";
+            localVideo.src = src;
+            setTimeout(() => {
+              localVideo.addEventListener("canplay",  function() {
+                localVideo.play();
+              });
+            }, 2500);
+            $(bottomBar).append($(downloadCmd)).append($(shareCmd)).append($(backCmd));
+            $(view).append($(sponsorBox)).append($(localVideo)).append($(bottomBar))
+
+            //let newWindow = window.open();
+            //$(newWindow.document.body).append($(view));
+            $('#app').empty().append($(view));
+          }
+
+          if ((seriesId !== 'capture-001') && (seriesId !== 'sponsor-001')) {
+            document.title = 'WOW WOW Wow...';
+          } else {
+            document.title = defaultTitle;
+          }
+
+        } else {
+          //เปิดรายการรูปจากซีรีส์
+          myLiffUrl = radconnextUrl + '/share/?seriesId=' + seriesId;
+          let seriesUrl = '/api/usr/upload/series/' + seriesId;
+          doCallListSeries(seriesUrl).then(async (resMe)=>{
+            //let counterParams = {seriesId: seriesId};
+            //let updateRes = await doCallUpdateViewCounter(counterParams);
+            //console.log(updateRes);
+            //let readRes = await doCallReadViewCounter(counterParams);
+            //console.log(readRes);
+            let thumbsWrapper = await doCreateImagesSeriesThumb(seriesId, resMe);
+            $(thumbsWrapper).css({'margin-top': '50px'});
+            let shareCmd = doCreateShareCmd(myLiffUrl);
+            let playCmd = doCreatePlayCmd(resMe, seriesId, playCmdClickCallback);
+            $(playCmd).css({'margin-left': '10px'});
+            $(shareBox).append($(shareCmd)).append($(playCmd));
+            $('#app').prepend($(thumbsWrapper));
+            $('#app').append($(shareBox));
+            $('#app').prepend($(sponsorBox));
+            document.title = seriesId;
+          });
+        }
+      }
+    } else {
+      //เปิดหน้ารวมของ root <- แสดงรายการภาพของ root
+      myLiffUrl = radconnextUrl + '/share';
+      doCallListUsrUpload().then((resMe)=>{
+        doCreateUsrUploadThumb(resMe).then(async (thumbsWrapper)=>{
+          //let readRes = await doCallReadViewCounter();
+          //console.log(readRes);
+
+          $(thumbsWrapper).css({'margin-top': '50px'});
+          let shareCmd = doCreateShareCmd(myLiffUrl);
+          $(shareBox).append($(shareCmd));
+          $('#app').prepend($(thumbsWrapper));
+          $('#app').append($(shareBox));
+          $('#app').prepend($(sponsorBox));
+          document.title = defaultTitle;
+        })
+      });
+    }
+  }
+
+  const doCallSponsorList = function(){
+    return new Promise(async function(resolve, reject) {
+      let seriesUrl = '/api/usr/upload/series/sponsor-001';
+      let resMe = await doCallListSeries(seriesUrl);
+      resolve(resMe);
+    });
+  }
+
+  const doLoadImageFiles = function(){
+    return new Promise(async function(resolve, reject) {
+      let sponsorImages = await doCallSponsorList();
+      let imageFiles = [];
+      await sponsorImages.forEach((item, i) => {
+        if (item.indexOf('0000') == 0) {
+          let imageLink = 'https://radconnext.tech/img/usr/upload/sponsor-001/' + item;
+          imageFiles.push(imageLink);
+        }
+      });
+      resolve(imageFiles);
+    });
+  }
+
+  let imageFiles = [];
+  let sponsorTimer = undefined;
+  const doStopSponsorTimer = function() {
+    if (sponsorTimer) {
+      window.clearTimeout(sponsorTimer);
+    }
+  }
+
+  const doCreateMySponsor = function(){
+    return new Promise(async function(resolve, reject) {
+      const doStartPlay = function() {
+        doStopSponsorTimer();
+        sponsorTimer = window.setTimeout(()=>{
+          if (playOptions.mode == 'random') {
+            currentPlaySportIndex = Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
+          } else {
+            if (currentPlaySportIndex >= maximum) {
+              currentPlaySportIndex = 0
+            } else {
+              currentPlaySportIndex = currentPlaySportIndex + 1;
+            }
+          }
+          doPlaySport(currentPlaySportIndex);
+        }, playOptions.delay * 1000);
+      }
+
+      let imageLink = imageFiles[0];
+      let minimum = 0;
+      let maximum = imageFiles.length - 1;
+      let currentPlaySportIndex = 0;
+      if (playOptions.mode == 'random') {
+        currentPlaySportIndex = Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
+      }
+
+      const doPlaySport = function(n){
+        let fileId = undefined;
+        if ((imageFiles)  && (imageFiles.length > 0) && (typeof imageFiles[n] == 'string')) {
+          imageLink = imageFiles[n];
+          let fileUrls = imageLink.split('/');
+          fileId = fileUrls[fileUrls.length-1];
+        } else if ((imageFiles)  && (imageFiles.length > 0) && (typeof imageFiles[n] == 'object')) {
+          let filesArray = imageFiles.toArray();
+          imageLink = clipURL.createObjectURL(imageFiles[n]);
+          fileId = filesArray[n].name;
+        } else {
+          fileId = '0000-770.jpg'
+          imageLink = 'https://radconnext.tech/img/usr/upload/sponsor-001/' + fileId;
+          doStartPlay();
+        }
+        let playImg = new Image();
+        playImg.src = imageLink;
+        playImg.id = fileId;
+        playImg.style.cursor = 'pointer';
+        playImg.onload = function() {
+          let w = $(this).width();
+          let h = $(this).height();
+          if (w > h) {
+            $(this).css({'width': 'auto', 'height': (playOptions.imageSize + 'px')});
+          } else {
+            $(this).css({'width': (playOptions.imageSize + 'px'), 'height': 'auto'});
+          }
+
+          $(sponsorBox).empty().append($(this));
+          $(sponsorBox).append($('<span>' + fileId + '</span>').css({'position': 'absolute', 'top': '2px', 'left': '2px', 'z-index': '11'}));
+          $(sponsorBox).append($(editPlaySettingCmd));
+          $(editPlaySettingCmd).on('click', (evt)=>{
+            doOpenSettingForm(evt, (newSettingValue)=>{
+              doStartPlay();
+            });
+          });
+          $(this).on('click', (evt)=>{
+            let openUrl = undefined;
+            if ((imageFiles) && (typeof imageFiles[n] == 'string')) {
+              let imageCode = fileId.split('.');
+              openUrl = linkTo + 'k!' + imageCode[0];
+            } else if ((imageFiles) && (typeof imageFiles[n] == 'object')) {
+              openUrl = imageLink;
+            }
+            window.open(openUrl, '_blank');
+          });
+          //$(sponsorBox).focus();
+          doStartPlay();
+        }
+      };
+
+      doPlaySport(currentPlaySportIndex);
+
+
+      $(sponsorBox).on('keydown', (evt)=>{
+        switch (evt.keyCode) {
+          case 39:
+            /* Arrow Right */
+            ++currentPlaySportIndex;
+            if (currentPlaySportIndex >= imageFiles.length) {
+              currentPlaySportIndex = 0;
+            }
+            doStopSponsorTimer();
+            doPlaySport(currentPlaySportIndex);
+          break;
+          case 37:
+            /* Arrow Left */
+            --currentPlaySportIndex;
+            if (currentPlaySportIndex < 0) {
+              currentPlaySportIndex = imageFiles.length - 1;
+            }
+            doStopSponsorTimer();
+            doPlaySport(currentPlaySportIndex);
+          break;
+          case 38:
+            /* Arrow Up */
+            doStopSponsorTimer();
+            doStartPlay();
+          break;
+          case 40:
+            /* Arrow Down */
+            doStopSponsorTimer();
+            doOpenSettingForm(evt, (newSettingValue)=>{
+              doStartPlay();
+            });
+          break;
+        }
+      });
+
+      resolve();
+    });
+  }
+
+  doLoadImageFiles().then((imgFiles)=>{
+    imageFiles = imgFiles;
+    doCreateMySponsor();
+  });
+
+  const doCreateImgView = function(seriesId, imageFile){
+    let src = usrSeriesRootPath + '/' + seriesId + '/' + imageFile;
+    let img = $('<img width="96%" height="auto" src="' + src + '"/>');
+    $(img).css({'cursor': 'pointer', 'padding': '4px', 'border': '2px solid #ddd', 'margin': '4px'});
+    $(img).on('click', (evt)=> {
+      let imageCode = imageFile.split('.');
+      let openUrl = /*radconnextUrl +*/ '/share/?seriesId=' + seriesId + 'k!' + imageCode[0];
+      window.open(openUrl, '_blank');
+    })
+    return $(img);
+  }
+
+  const playCmdClickCallback = function(evt, seriesId, imageLists){
+    let myPBox = $('<div id="PBox" tabindex="1"></div>');
+		$(myPBox).css({'position': 'absolute', 'width': '75%', 'height': 'auto', 'background-color': '#fefefe', 'padding': '5px', 'border': '4px solid #888',  'z-index': '45', 'top': '100px'});
+		$('body').append($(myPBox));
+
+		$(myPBox).draggable({containment: "parent"});
+		$(myPBox).resizable({containment: 'parent',
+			stop: function(evt) {
+				$(myPBox).css({'width': evt.target.clientWidth, 'height': evt.target.clientHeight});
+			}
+		});
+		$(myPBox).on('click', (evt)=>{
+			$(myPBox).focus();
+		});
+		$(myPBox).on('keydown', (evt)=>{
+			//console.log(evt.keyCode);
+			//console.log(evt.which);
+      let w = 0;
+      let newSrc = undefined;
+      let openUrl = undefined;
+			switch (evt.keyCode) {
+				case 39:
+					/* Arrow Right */
+          ++currentPlayPreviewIndex;
+          if (currentPlayPreviewIndex == imageLists.length) {
+            currentPlayPreviewIndex = 0;
+          }
+          newSrc = usrSeriesRootPath + '/' + seriesId + '/' + imageLists[currentPlayPreviewIndex];
+          $(myPBox).find('img').attr('src', newSrc);
+          $(myPBox).find('img').on('click', (evt)=>{
+            openUrl = '/share/?seriesId=' + seriesId + 'k!' + imageLists[currentPlayPreviewIndex];
+            window.open(openUrl, '_blank');
+          })
+          if (previewTimer) {
+            window.clearTimeout(previewTimer);
+          }
+				break;
+				case 37:
+					/* Arrow Left */
+          --currentPlayPreviewIndex;
+          if (currentPlayPreviewIndex < 0) {
+            currentPlayPreviewIndex = imageLists.length -1;
+          }
+          newSrc = usrSeriesRootPath + '/' + seriesId + '/' + imageLists[currentPlayPreviewIndex];
+          $(myPBox).find('img').attr('src', newSrc);
+          $(myPBox).find('img').on('click', (evt)=>{
+            openUrl = '/share/?seriesId=' + seriesId + 'k!' + imageLists[currentPlayPreviewIndex];
+            window.open(openUrl, '_blank');
+          })
+          if (previewTimer) {
+            window.clearTimeout(previewTimer);
+          }
+				break;
+				case 38:
+					/* Arrow Up */
+          w = $(myPBox).find('img').css('width');
+          w = parseFloat(w) + 10 + 'px';
+          $(myPBox).find('img').css('width', w);
+				break;
+				case 40:
+					/* Arrow Down */
+          w = $(myPBox).find('img').css('width');
+          w = parseFloat(w) - 10 + 'px';
+          $(myPBox).find('img').css('width', w);
+				break;
+			}
+		});
+
+    $(myPBox).parent().css({'width': '100%', 'min-height': '100%'});
+    let imgBox = doCreateImgView(seriesId, imageLists[0]);
+    $(imgBox).on('load', (evt)=>{
+      let img = $(evt.currentTarget);
+      //console.log(evt);
+      $(img).center($(myPBox));
+    });
+    $(myPBox).append($(imgBox));
+    let closeCmd = $('<input type="button" value=" Close "/>');
+    $(closeCmd).on('click', (evt)=>{
+      $(myPBox).remove();
+    });
+
+    $(closeCmd).on('click', (evt)=>{
+      $(myPBox).remove();
+    });
+    let settingTimeCmd = $('<input type="button" value=" Time ... "/>').css({'margin-left': '10px'});
+    $(settingTimeCmd).on('click', (evt)=>{
+      let newValue = prompt("Please enter your new delay time value", delaySecond);
+      if (Number(newValue) > 0) {
+        delaySecond = Number(newValue);
+      }
+    });
+
+
+    $(myPBox).append($('<div></div>').css({'width': '100%', 'text-align': 'center'}).append($(closeCmd)).append($(settingTimeCmd)));
+    $(myPBox).focus();
+
+    let currentPlayPreviewIndex = 0;
+    let previewTimer = undefined;
+    let delaySecond = 20;
+
+    const doPlayPreview = function(n){
+      let src = usrSeriesRootPath + '/' + seriesId + '/' + imageLists[n];
+      $(myPBox).find('img').attr('src', src);
+      $(myPBox).find('img').attr("onclick", "").unbind("click");
+      $(myPBox).find('img').on('click', (evt)=>{
+        let imageCode = imageLists[n].split('.');
+        openUrl = '/share/?seriesId=' + seriesId + 'k!' + imageCode[0];
+        window.open(openUrl, '_blank');
+      })
+
+      previewTimer = window.setTimeout(()=>{
+        let i = n + 1;
+        if (n >= (imageLists.length-1)){
+          i = 0;
+        }
+        currentPlayPreviewIndex = i;
+        doPlayPreview(currentPlayPreviewIndex);
+      }, delaySecond * 1000);
+    }
+    doPlayPreview(currentPlayPreviewIndex);
+  }
+//https://medium.com/linedevth/%E0%B9%80%E0%B8%97%E0%B8%84%E0%B8%99%E0%B8%B4%E0%B8%84%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%AA%E0%B8%A3%E0%B9%89%E0%B8%B2%E0%B8%87-universal-link-%E0%B9%83%E0%B8%AB%E0%B9%89%E0%B9%80%E0%B8%9B%E0%B8%B4%E0%B8%94%E0%B9%84%E0%B8%94%E0%B9%89%E0%B8%97%E0%B8%B1%E0%B9%89%E0%B8%87-liff-url-%E0%B9%81%E0%B8%A5%E0%B8%B0-web-url-%E0%B9%82%E0%B8%94%E0%B8%A2%E0%B9%84%E0%B8%A1%E0%B9%88%E0%B8%95%E0%B9%89%E0%B8%AD%E0%B8%87%E0%B8%9E%E0%B8%B6%E0%B9%88%E0%B8%87%E0%B9%80%E0%B8%84%E0%B8%A3%E0%B8%B7%E0%B9%88%E0%B8%AD%E0%B8%87%E0%B8%A1%E0%B8%B7%E0%B8%AD-7bf17a435339
+
+//https://medium.com/linedevth/%E0%B8%AA%E0%B8%A3%E0%B9%89%E0%B8%B2%E0%B8%87-content-sharer-%E0%B9%83%E0%B8%AB%E0%B9%89-line-oa-%E0%B8%87%E0%B9%88%E0%B8%B2%E0%B8%A2%E0%B9%86-%E0%B8%94%E0%B9%89%E0%B8%A7%E0%B8%A2-line-social-plugins-23156fbe5415
+
+  const clipURL = window.URL;
+  const doCreateFileChooser = function(callback){
+    let fileChooser = $('<input type="file" multiple accept="video/*, image/png, image/jpeg, audio/mp3"/>');
+    $(fileChooser).css({'display': 'none'});
+    $(fileChooser).on('change', (evt)=> {
+      let fileChooses = evt.currentTarget.files;
+      callback(fileChooses);
+    });
+    return $(fileChooser);
+  }
+</script>

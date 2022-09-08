@@ -1,0 +1,90 @@
+<script src="../lib/sip-0.20.0.min.js"></script>
+<script>
+
+  // Initiate client
+  var outinnumber = "+46766861004";
+  var session = {"status":0};
+  var userAgent = new SIP.UA({
+    transportOptions: {
+      wsServers: [
+        'wss://radconnext.me/ws']
+      },
+      uri: '4600100100@voip.46elks.com',
+      authorizationUser: '4600100100',
+      password: 'AAAAAAAAAAAAAAAAAAAAAAAAAA',
+      registerExpires: 60,
+      sessionDescriptionHandlerFactoryOptions: {
+        constraints: {
+          audio: true,
+          video: false
+        }
+      }
+    }
+  );
+
+  // Initiate ring sound
+  var ringAudio = new Audio('/static/sound/ring.mp3');
+  ringAudio.loop = true;
+
+  // Handle new call
+  userAgent.on('invite',
+    function (incomingSession) {
+      // If call is ongoing terminate new call.
+      if (session.status == 12) {
+        incomingSession.terminate()
+        return;
+      }
+
+      // Set global call to incoming call.
+      session = incomingSession;
+
+      // Add sound to browser when call is connected.
+      session.on('accepted', addsound);
+
+      // If the call is coming from self (outgoing call)
+      // make automatic pickup.
+      if(session.remoteIdentity.uri.user == outinnumber){
+        session.accept();
+      }
+      // In other case play ringtone.
+      else {
+        ringAudio.play();
+      }
+    }
+  );
+
+  // Add sound from the remote caller to the browser.
+  function addsound(){
+    var domElement = document.getElementById('audio');
+    var pc = session.sessionDescriptionHandler.peerConnection;
+    var remoteStream = new MediaStream();
+    pc.getReceivers().forEach(
+      function(receiver) {
+        var track = receiver.track;
+        if (track) {
+          remoteStream.addTrack(track);
+        }
+      }
+    );
+    domElement.srcObject = remoteStream;
+    domElement.play();
+  }
+
+  // Initiate outgoing all with a request to the API for call.
+  function startCall(to) {
+    var domElement = document.getElementById('audio');
+    domElement.play();
+    $.post("/yourcallendpoint",
+      {
+        voice_start: '{"connect":"'+to+'"}',
+        to: "+4600100100",
+        from: outinnumber,
+      },
+      function(data, status) {}
+    );
+  }
+</script>
+<audio id="audio">
+<button onclick="session.accept();">Pickup</button>
+<button onclick="session.bye();">Hangup</button>
+<button onclick="startCall('+4634090510')">Call</button>

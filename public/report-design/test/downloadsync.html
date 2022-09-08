@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Download files using a XHR2, a Worker, and saving to filesystem</title>
+  </head>
+<body>
+  <script>
+    var errorHandler = function(err){
+      console.log(err);
+    }
+
+    window.resolveLocalFileSystemURL = window.resolveLocalFileSystemURL ||  window.webkitResolveLocalFileSystemURL;
+    var worker = new Worker('downloader.js');
+    worker.onmessage = function(e) {
+      console.log(e.data);
+
+      var dwnUrl = e.data;
+      window.resolveLocalFileSystemURL(dwnUrl, function(fileEntry) {
+        console.log(fileEntry);
+        fileEntry.file(function(file) {
+           var reader = new FileReader();
+
+           reader.onloadend = async function(e) {
+             //var txtArea = document.createElement('textarea');
+             //txtArea.value = this.result;
+             //document.body.appendChild(txtArea);
+             // create a new handle
+
+             console.log(this.result);
+
+             const a = document.createElement('a');
+             a.download = 'my-zip.zip';
+             a.href = URL.createObjectURL(file);
+             a.addEventListener('click', (e) => {
+               setTimeout(() => URL.revokeObjectURL(a.href), 30 * 1000);
+             });
+             a.click();
+           };
+
+           //reader.readAsText(file);
+           reader.readAsArrayBuffer(file);
+        }, errorHandler);
+      });
+    };
+    const zipExt = '.zip';
+    const zipID = 'e9926ddf-a89cb3a2-338b0cab-66e7d80e-42468d25';
+    let zipFile = zipID + zipExt;
+    var downloadLink = 'https://radconnext.info/img/usr/zip/' + zipFile;
+    //worker.postMessage({fileName: 'MyLogo.png', url: 'https://radconnext.info/icon.png', type: 'image/png'});
+    worker.postMessage({fileName: zipFile, url: downloadLink, type: 'application/x-compressed'});
+  </script>
+  </body>
+</html>

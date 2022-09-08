@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link href="/images/icon.png" rel="shortcut icon" type="image/x-icon"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rad Connext Image Editor</title>
+    <link href="/lib/jquery-ui.min.css" rel="stylesheet">
+    <link href="/lib/tui-image-editor.min.css" rel="stylesheet">
+    <link href="/lib/tui-color-picker.css" rel="stylesheet">
+    <script type="text/javascript" src="../../lib/jquery.js"></script>
+    <script type="text/javascript" src="../../lib/jquery-ui.min.js"></script>
+
+    <script type="text/javascript" src="../../lib/fabric.js"></script>
+    <script type="text/javascript" src="../../lib/tui-code-snippet.min.js"></script>
+    <script type="text/javascript" src="../../lib/tui-color-picker.js"></script>
+    <script type="text/javascript" src="../../lib/tui-image-editor.min.js"></script>
+
+    <script type="text/javascript" src="../../lib/simpleUpload.min.js"></script>
+  	<script type="text/javascript" src="../../lib/notify.min.js"></script>
+  </head>
+  <body>
+    <div id="ViewerBox"></div>
+  </body>
+</html>
+<script type="text/javascript">
+  function urlQueryToObject(url) {
+  	let result = url.split(/[?&]/).slice(1).map(function(paramPair) {
+  				return paramPair.split(/=(.+)?/).slice(0, 2);
+  		}).reduce(function (obj, pairArray) {
+  				obj[pairArray[0]] = pairArray[1];
+  				return obj;
+  		}, {});
+  	return result;
+  }
+
+  $( document ).ready(function() {
+    let queryObj = urlQueryToObject(window.location.href);
+    if (queryObj.url) {
+      console.log(queryObj.url);
+      let imgPreview = $('<img/>');
+      $(imgPreview).attr('src', queryObj.url);
+      $('#ViewerBox').append($(imgPreview));
+    }
+  });
+</script>

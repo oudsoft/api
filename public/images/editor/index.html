@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link href="/images/icon.png" rel="shortcut icon" type="image/x-icon"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rad Connext Image Editor</title>
+    <link href="/lib/jquery-ui.min.css" rel="stylesheet">
+    <link href="/lib/tui-image-editor.min.css" rel="stylesheet">
+    <link href="/lib/tui-color-picker.css" rel="stylesheet">
+    <script type="text/javascript" src="../../lib/jquery.js"></script>
+    <script type="text/javascript" src="../../lib/jquery-ui.min.js"></script>
+
+    <script type="text/javascript" src="../../lib/fabric.js"></script>
+    <script type="text/javascript" src="../../lib/tui-code-snippet.min.js"></script>
+    <script type="text/javascript" src="../../lib/tui-color-picker.js"></script>
+    <script type="text/javascript" src="../../lib/tui-image-editor.min.js"></script>
+
+    <script type="text/javascript" src="../../lib/simpleUpload.min.js"></script>
+  	<script type="text/javascript" src="../../lib/notify.min.js"></script>
+    <script type="text/javascript" src="../../lib/imageeditor.js"></script>
+  </head>
+  <body>
+    <div id="EditorBox"></div>
+    <div id="PopupPreview"></div>
+  </body>
+</html>
+<script type="text/javascript">
+  $( document ).ready(function() {
+    $("body").append($('<canvas id="CaptureCanvas" width="100%" height="auto"/>'));
+    let canvas = document.getElementById('CaptureCanvas');
+
+    const myBox = $('<div></div>');
+    $(myBox).css({'width': '100%', 'min-height': '100px;'})
+
+    const pluginOption = {canvas: canvas};
+    const myEditor = $(myBox).imageeditor(pluginOption);
+
+    $(myBox).appendTo($('#EditorBox'));
+  });
+</script>

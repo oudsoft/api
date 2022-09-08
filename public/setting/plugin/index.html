@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link href="icon.png" rel="shortcut icon" type="image/x-icon"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rad Connext Plugin</title>
+    <link rel="stylesheet" href="../../lib/jquery-ui.min.css"/>
+    <link rel="stylesheet" href="../../lib/tui-image-editor.min.css" type="text/css" />
+    <link rel="stylesheet" href="../../lib/tui-color-picker.css" type="text/css" />
+    <link rel="stylesheet" href="plugin.css"/>
+    <link rel="stylesheet" href="../../case/css/custom-select.css"/>
+    <script type="text/javascript" src="../../lib/jquery.js"></script>
+    <script type="text/javascript" src="../../lib/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="jquery-patient-history-image-plugin.js"></script>
+    <script type="text/javascript" src="jquery-countdown-clock-plugin.js"></script>
+    <script type="text/javascript" src="jquery-scanpart-plugin.js"></script>
+    <script type="text/javascript" src="jquery-custom-select-plugin.js"></script>
+  </head>
+  <body>
+    <div id="main" style="position: relative;">
+      <div style="position: relative;">
+        <div id="Contaner"></div>
+      </div>
+      <div style="position: relative;">
+        <button type="button" id="result-button">Get Image</button>
+      </div>
+    </div>
+    <div id="result" style="position: relative;"></div>
+    <div id="ClockWrapper">
+      <div id="Clock"></div>
+    </div>
+    <div id="ScanPartWrapper">
+      <div id="ScanPart"></div>
+    </div>
+    <div>
+      <!--
+      <a href="radiant://?n=f&v=C:/Users/Administrator/Downloads/MRS_NOI_KHAMAON%20-20210124.zip">Open</a>
+      -->
+      <a href="radiant://?n=f&v=C:/Users/Oodsoft/Downloads/MRS_NOI_KHAMAON-20210121.zip">Open</a>
+    </div>
+    <div>
+      <div id="CustomSelector"></div>
+      <input type="button" value=" Test" id="TestRadio"/>
+    </div>
+    <div class="arrow-up"></div>
+    <div class="arrow-down"></div>
+    <div class="arrow-left"></div>
+    <div class="arrow-right"></div>
+  </body>
+</html>
+<script type="text/javascript">
+
+  let phProp = {
+    attachFileUploadApiUrl: '/api/uploadpatienthistory',
+    scannerUploadApiUrl: '/api/scannerupload',
+    captureUploadApiUrl: '/api/captureupload',
+    attachFileUploadIconUrl: '/images/attach-icon.png',
+    scannerUploadIconUrl: '/images/scanner-icon.png',
+    captureUploadIconUrl: '/images/screen-capture-icon.png'
+  };
+  //var patientHistoryBox = $("<div></div>").appendTo($("#Contaner")).imagehistory( phProp ).data("custom-imagehistory");
+  var patientHistoryBox = $("<div></div>").appendTo($("#Contaner"));
+  $(patientHistoryBox).imagehistory( phProp ).data("custom-imagehistory");
+
+  $('#result-button').click(()=> {
+    let imagesResult = patientHistoryBox.images();
+    console.log(imagesResult);
+    $('#result').empty();
+    $('#result').append("<p>" + JSON.stringify(imagesResult) + "</p>")
+  });
+
+  let countTo = {countToHH: 0, countToMN: 5};
+  $('#Clock').countdownclock(countTo);
+  $('#Clock').on('countdowntrigger', (e, data)=>{
+    alert(JSON.stringify(data));
+  });
+
+  let scanpartSettings = {
+        iconCmdUrl: '/images/case-incident.png',
+        loadOriginUrl: '/api/scanpartref/list',
+        addScanpartItemUrl: '/api/scanpartref/add',
+        externalStyle: {"font-family": "THSarabunNew", "font-size": "24px"},
+        successCallback: function(data) {
+          doSuccessSelect(data);
+        }
+      };
+  let scanpart = $('#ScanPart').scanpart(scanpartSettings);
+  console.log(scanpart.hello(1234567));
+  console.log(scanpart.test());
+  let selectedResultBox = $('<div></div>').prependTo($('#ScanPartWrapper'));
+  function doSuccessSelect(data){
+    console.log(data);
+    $(selectedResultBox).append($(data.selectedBox));
+  }
+  $(selectedResultBox).on('removeitem', async (evt, data)=>{
+    console.log(data);
+  });
+
+  //let customSelectorHandle = $('#CustomSelector').customselect({width:200, externalStyle: {"font-family": "THSarabunNew", "font-size": "24px", "width": "200px", "line-height": "24px", "height": "24px"}});
+  //customSelectorHandle.setSelectOptions([1,2,3,4,5]);
+
+  let radioCustomSelector = $('<div id="Radiologist"></div>');
+  $(radioCustomSelector).appendTo($('#CustomSelector'));
+  let customSelectPluginOption = {
+    loadOptionsUrl: '/api/radiologist/state/current',
+    externalStyle: {"font-family": "THSarabunNew", "font-size": "24px", "width": "400px", "line-height": "30px", "min-height": "30px", "height": "30px"},
+    startLoad: function(){console.log('start...');},
+    stopLoad: function(){console.log('....stop');},
+  }
+  let customSelectorHandle = $($('#CustomSelector')).find('#Radiologist').customselect(customSelectPluginOption);
+
+  $('#TestRadio').click((evt)=>{
+    console.log(customSelectorHandle.getSelectedIndex());
+  })
+</script>
+
+<style>
+  @font-face { font-family: THSarabunNew; src: url("../../font/THSarabunNew.ttf");}
+  @font-face { font-family: THSarabunNewBold; src: url("../../font/THSarabunNew Bold.ttf");}
+
+  .blink {color: white}
+  .danger { color: red}
+
+  /* scanpart plugin */
+  .search-input {
+    font-size: 30px;
+    border: 2px solid gray;
+    margin: 20px 5px;
+    outline: 4px solid silver;
+  }
+  .search-input:focus {
+    outline: 4px solid blue;
+  }
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+    margin-top: -100px;
+  }
+
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+  }
+
+  input:checked + .slider {
+    background-color: blue;
+  }
+
+  input:focus + .slider {
+    box-shadow: 0 0 1px blue;
+  }
+
+  input:checked + .slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+  }
+
+  .item-list {
+    padding: 2px;
+    border: 2px solid blue;
+  }
+  .item-list:hover {
+    background-color: blue;
+    color: white;
+  }
+  .search-mark {
+    color: red;
+  }
+</style>

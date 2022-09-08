@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+    <title>Rad Connext</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  	<script type="text/javascript" src="../../lib/jquery.js"></script>
+  	<script type="text/javascript" src="../../lib/jquery-ui.min.js"></script>
+  	<script type="text/javascript" src="../../lib/jquery.loading.min.js"></script>
+    <script type="text/javascript" src="../../lib/notify.min.js"></script>
+    <link rel='stylesheet' href='../../lib/jquery-ui.min.css' />
+    <link rel='stylesheet' href='../../stylesheets/style.css' />
+  </head>
+  <body>
+    <div id="ShowSocketList">
+      <div style="width: 100%; text-align: center;">
+        <input type="button" id="LoadSocketCmd" value="Load Socket."/>
+      </div>
+      <div id="SocketList"></div>
+    </div>
+  </body>
+</html>
+<style>
+
+</style>
+<script type="text/javascript">
+
+  $( document ).ready(function() {
+    console.log(localStorage.getItem('token'));
+
+    $.ajaxSetup({
+      beforeSend: function(xhr) {
+        xhr.setRequestHeader('Authorization', localStorage.getItem('token'));
+      }
+    });
+    let userdata = JSON.parse(localStorage.getItem('userdata'));
+    console.log(userdata);
+
+    $('#LoadSocketCmd').on('click', (evt)=>{
+      doLoadOnlineSocket(evt);
+    });
+  });
+
+  const doCallOnlineSocket = function(){
+    return new Promise(async function(resolve, reject) {
+      let callUrl = '/api/dicomtransferlog/socket/clients';
+      let params = {};
+      $.get(callUrl, params).then((response) => {
+        resolve(response);
+      });
+    });
+  }
+
+  const doReConnectSocket = function(socketId){
+    return new Promise(async function(resolve, reject) {
+      let callUrl = '/api/dicomtransferlog/socket/client/' + socketId;
+      let params = {};
+      $.get(callUrl, params).then((response) => {
+        resolve(response);
+      });
+    });
+  }
+
+  const doLoadOnlineSocket = function(evt){
+    $('#SocketList').empty();
+    doCallOnlineSocket().then(async (socketRes)=>{
+      console.log(socketRes);
+      let sockets = socketRes.Clients;
+      let socketTable = await doShowSocketList(sockets);
+      $('#SocketList').append($(socketTable));
+    });
+  }
+
+  const doShowSocketList = function(sockets){
+    return new Promise(async function(resolve, reject) {
+      let socketTable = $('<table width="100%" border="1" cellpadding="0" cellspacing="0"></table>');
+      let headerRow = $('<tr><td width="5%" align="center">#</td><td width="10%" align="center">Socket ID</td><td width="20%" align="center">Hospital ID</td><td width="25%" align="center">State</td><td width="*" align="center">CMD</td></tr>');
+      $(headerRow).css({'background-color': 'grey', 'color': 'white'});
+      $(socketTable).append($(headerRow));
+      let promiseList = new Promise(async function(resolve2, reject2) {
+        for (let i=0; i < sockets.length; i++){
+          let itemRow = $('<tr></tr>');
+          $(itemRow).appendTo($(socketTable));
+          $(itemRow).append($('<td align="center">' + (i+1) + '</td>'));
+          $(itemRow).append($('<td align="left">' + sockets[i].id + '</td>'));
+          $(itemRow).append($('<td align="center">' + sockets[i].hospitalId + '</td>'));
+          $(itemRow).append($('<td align="center">' + sockets[i].state + '</td>'));
+          let cmdCol = $('<td align="center"></td>');
+          $(itemRow).append($(cmdCol));
+          if (sockets[i].id !== 'orthanc'){
+            let yourOrthancSockets = await sockets.filter((item)=>{
+              if ((item.hospitalId == 'orthanc') && (item.hospitalId == sockets[i].hospitalId)){
+                return item;
+              }
+            });
+            if (yourOrthancSockets.length == 0){
+              let clientReConnectCmd = $('<input type="button" value="Re-Connect"/>');
+              $(clientReConnectCmd).on('click', async (evt)=>{
+                let reconnRes = await doReConnectSocket(sockets[i].id);
+                console.log(reconnRes);
+              });
+              $(cmdCol).append($(clientReConnectCmd));
+            } else {
+              $(cmdCol).append($('<span></span>'));
+            }
+          } else {
+            let clientMonitorCmd = $('<input type="button" value="Monitor"/>');
+            $(clientMonitorCmd).on('click', async (evt)=>{
+              let newWindowUrl = '/setting/client/index.html?hospitalId=' + sockets[i].hospitalId;
+              //window.open(newWindowUrl, '_blank').focus();
+              window.open(newWindowUrl);
+            });
+            $(cmdCol).append($(clientMonitorCmd));
+          }
+        }
+        setTimeout(()=> {
+          resolve2($(socketTable));
+        },500);
+      });
+      Promise.all([promiseList]).then((ob)=> {
+        resolve(ob[0])
+      });
+    });
+  }
+
+</script>

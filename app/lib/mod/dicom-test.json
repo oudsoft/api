@@ -1,0 +1,54 @@
+{
+    "ID": "fd9a5ab7-29a54a27-6cec9243-766e3831-e7597ecd",
+    "Type": "Study",
+    "Series": [
+        "79249038-32476c11-e07cbb86-f50df8b5-92f48730"
+    ],
+    "IsStable": false,
+    "LastUpdate": "20210317T105531",
+    "MainDicomTags": {
+        "StudyID": "",
+        "StudyDate": "20210317",
+        "StudyTime": "174847.000",
+        "AccessionNumber": "AC622103168",
+        "InstitutionName": "VIRAJSILP HOSPITAL",
+        "StudyDescription": "",
+        "StudyInstanceUID": "1.2.840.113845.11.1000000002143326077.20210317174712.1184245",
+        "RequestingPhysician": "PAWIT^WIRATSIN",
+        "ReferringPhysicianName": "PAWIT^WIRATSIN"
+    },
+    "ParentPatient": "04151027-57de8c59-1976f7d3-6e53ba88-0a1aa087",
+    "SamplingSeries": {
+        "ID": "79249038-32476c11-e07cbb86-f50df8b5-92f48730",
+        "Type": "Series",
+        "Status": "Unknown",
+        "IsStable": false,
+        "Instances": [
+            "7b53a2aa-e30bf08b-40a7ade5-7397b5e4-ad754477"
+        ],
+        "LastUpdate": "20210317T105531",
+        "ParentStudy": "fd9a5ab7-29a54a27-6cec9243-766e3831-e7597ecd",
+        "MainDicomTags": {
+            "Modality": "CR",
+            "SeriesDate": "20210317",
+            "SeriesTime": "175122.000",
+            "StationName": "ru0",
+            "Manufacturer": "FUJIFILM Corporation",
+            "SeriesNumber": "1001",
+            "OperatorsName": "NATTAWIPA",
+            "BodyPartExamined": "CHEST",
+            "SeriesInstanceUID": "1.2.392.200036.9125.3.160722811916340.64966124927.3600141",
+            "ContrastBolusAgent": "",
+            "PerformedProcedureStepDescription": "Chest X-Ray (PP)",
+            "AcquisitionDeviceProcessingDescription": "CHEST PA"
+        },
+        "ExpectedNumberOfInstances": null
+    },
+    "PatientMainDicomTags": {
+        "PatientID": "62-20-197647",
+        "PatientSex": "F",
+        "PatientName": "SUPAVADEE PARSOMSAB",
+        "OtherPatientIDs": "",
+        "PatientBirthDate": "19860424"
+    }
+}

@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+    <title>Rad Connext</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  	<script type="text/javascript" src="../../lib/jquery.js"></script>
+  	<script type="text/javascript" src="../../lib/jquery-ui.min.js"></script>
+  	<script type="text/javascript" src="../../lib/jquery.loading.min.js"></script>
+    <script type="text/javascript" src="../../lib/notify.min.js"></script>
+    <script type="text/javascript" src="../plugin/jquery-radutil-plugin.js"></script>
+    <link rel='stylesheet' href='../../lib/jquery-ui.min.css' />
+    <link rel='stylesheet' href='../../stylesheets/style.css' />
+    <link rel='stylesheet' href='../../case/css/style.css' />
+  </head>
+  <body>
+    <div id="ShowCaseList">
+      <div>
+        <label for="HospitalID">Hospital:</label><span>  </span>
+        <select id="HospitalID"></select><span>  </span>
+        <label for="Limit">Limit:</label><span>  </span>
+        <select id="Limit"></select><span>  </span>
+        <input type="button" id="LoadCaseCmd" value="Load Cases."/>
+      </div>
+      <div id="CaseList"></div>
+    </div>
+  </body>
+</html>
+<script type="text/javascript">
+
+  $( document ).ready(function() {
+    console.log(localStorage.getItem('token'));
+    $.ajaxSetup({
+      beforeSend: function(xhr) {
+        xhr.setRequestHeader('Authorization', localStorage.getItem('token'));
+      }
+    });
+    let userdata = JSON.parse(localStorage.getItem('userdata'));
+    console.log(userdata);
+
+    initPage();
+
+    $('#LoadCaseCmd').on('click', (evt)=>{
+      doLoadLast20Cases(evt);
+    });
+  });
+
+  const initPage = function(){
+    $('#Limit').empty();
+    $('#Limit').append($('<option value="10">10</option>'));
+    $('#Limit').append($('<option value="20">20</option>'));
+    $('#Limit').append($('<option value="30">30</option>'));
+    $('#Limit').append($('<option value="40">40</option>'));
+    $('#Limit').append($('<option value="50">50</option>'));
+    $('#Limit').append($('<option value="100">100</option>'));
+    $('#Limit').append($('<option value="200">200</option>'));
+    $('#Limit').append($('<option value="300">300</option>'));
+    $('#Limit').val("20").change();
+    $('#HospitalID').empty();
+    doCallLoadHospitalList().then((hospitals)=>{
+      hospitals.Options.forEach((hospital, i) => {
+        let hosItem = $('<option value="' + hospital.Value + '">' + hospital.DisplayText + '</option>');
+        $(hosItem).appendTo($('#HospitalID'));
+      });
+    });
+  }
+
+  const doCallLoadHospitalList = function(){
+    return new Promise(async function(resolve, reject) {
+      let callUrl = '/api/hospital/options';
+      let params = {};
+      $.post(callUrl, params).then((response) => {
+        resolve(response);
+      });
+    });
+  }
+
+  const doLoadRadioFullName = function(radioId){
+    return new Promise(async function(resolve, reject) {
+      let callUrl = '/api/users/select/' + radioId;
+      let params = {};
+      $.get(callUrl, params).then((response) => {
+        resolve(response);
+      });
+    });
+  }
+
+  const doCallLoadLast20Cases = function(hospitalId, limit){
+    return new Promise(async function(resolve, reject) {
+      let callUrl = '/api/cases/list/' + hospitalId  + '?limit=' + limit;
+      let params = {};
+      $.get(callUrl, params).then((response) => {
+        resolve(response);
+      });
+    });
+  }
+
+  const doResubmitReport = function(caseId){
+    let callUrl = '/api/uicommon/do/resubmit/' + caseId;
+    let params = {};
+    $.get(callUrl, params).then((response) => {
+      //resolve(response);
+      console.log(response);
+      alert('OK');
+    });
+  }
+
+  const doReZipCase = function(hospitalId, userId, studyID, dicomZipFilename){
+    let callUrl = '/api/cases/rezip';
+    let params = {hospitalId, userId, studyID, dicomZipFilename};
+    $.post(callUrl, params).then((response) => {
+      //resolve(response);
+      console.log(response);
+      if (response.Result == 'OK') {
+        alert('OK');
+      } else {
+        alert('Sorry');
+      }
+    });
+  }
+
+  const doCancelCase = function(caseId, hospitalId, userId){
+    if (localStorage.getItem('token')) {
+      let remark = 'Case Cancel By Admin'
+      let params = {caseId: caseId, casestatusId: 7, caseDescription: remark};
+      let cancelUrl = '/api/cases/status/shortcut/' + caseId;
+      $.post(cancelUrl, params).then((response) => {
+        console.log(response);
+      });
+    } else {
+      alert('Please login before use this function.');
+      window.location.replace('/index.html');
+    }
+  }
+
+  function doCallLoadStudyTags(hospitalId, studyId){
+    return new Promise(async function(resolve, reject) {
+      let rqBody = '{"Level": "Study", "Expand": true, "Query": {"PatientName":"TEST"}}';
+      let orthancUri = '/studies/' + studyId;
+	  	let params = {method: 'get', uri: orthancUri, body: rqBody, hospitalId: hospitalId};
+      let callLoadUrl = '/api/orthancproxy/find'
+      $.post(callLoadUrl, params).then((response) => {
+        resolve(response);
+      });
+    });
+  }
+
+  function doReStructureDicom(hospitalId, studyId, dicom){
+    return new Promise(async function(resolve, reject) {
+      let params = {hospitalId: hospitalId, resourceId: studyId, resourceType: "study", dicom: dicom};
+      let restudyUrl = '/api/dicomtransferlog/add';
+      $.post(restudyUrl, params).then((response) => {
+        resolve(response);
+      });
+    });
+  }
+
+  function doReDicomLog(hospitalID, studyID){
+    return new Promise(async function(resolve, reject) {
+      let studyTags = await doCallLoadStudyTags(hospitalID, studyID);
+      console.log(studyTags);
+      let reStudyRes = await doReStructureDicom(hospitalID, studyID, studyTags);
+      console.log(reStudyRes);
+      resolve(reStudyRes);
+    });
+  }
+
+  const doOpenResult = function(caseId){
+    let openUrl = '/api/casereport/select/' + caseId;
+    let params = {};
+    $.get(openUrl, params).then((response) => {
+      console.log(response);
+      let resultUrl = response.Records[0].PDF_Filename;
+      window.open(resultUrl, '_blank');
+    });
+  }
+
+  const doOpenCaseLog = function(caseId){
+    let openUrl = '/api/keeplog/select/' + caseId;
+    let params = {};
+    $.post(openUrl, params).then((response) => {
+      let keeplogs = response.Logs;
+      doShowKeepLogs(keeplogs);
+    });
+  }
+
+  const doShowKeepLogs = function(keeplogs){
+    let radAlertInfo = $('<div></div>');
+    let logTable = $('<table width="100%" cellpadding="0" cellspacing="0" border="1"></table>');
+    $(logTable).append($('<tr style="background-color: grey; color: white;"><td width="20%" align="center"><b>Date Time</b></td><td width="10%" align="center"><b>By</b></td><td width="10%" align="center"><b>From</b></td><td width="10%" align="center"><b>To</b></td><td width="*" align="center"><b>Detail</b></td></tr>'));
+    for (let i=0; i<keeplogs.length; i++){
+      let logItem = $('<tr></tr>');
+      let logAt = new Date(keeplogs[i].createdAt);
+      let logDate = logAt.toDateString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
+      let logTime = logAt.toTimeString().replace(/.*(\d{2}:\d{2}:\d{2}).*/, "$1");
+      $(logItem).append($('<td align="left">' + logDate + ' ' + logTime + '</td>'));
+      $(logItem).append($('<td align="center">' + keeplogs[i].userId + '</td>'));
+      $(logItem).append($('<td align="center">' + keeplogs[i].from + '</td>'));
+      $(logItem).append($('<td align="center">' + keeplogs[i].to + '</td>'));
+      $(logItem).append($('<td align="left">' + keeplogs[i].remark + '</td>'));
+      $(logTable).append($(logItem));
+    }
+    $(radAlertInfo).append($(logTable))
+    const radAlertOption = {
+      title: 'บันทึกการเปลี่ยนสถานะเคส',
+      msg: $(radAlertInfo),
+      width: '820px',
+      onOk: function(evt) {
+        radInfoBox.closeAlert();
+      },
+    }
+    let radInfoBox = $('body').radalert(radAlertOption);
+    $(radInfoBox.cancelCmd).hide();
+  }
+
+  const doOpenTask = function(caseId){
+    let openUrl = '/api/tasks/select/' + caseId;
+    let params = {};
+    $.get(openUrl, params).then((response) => {
+      let tasks = response.Records;
+      doShowTask(tasks);
+    });
+  }
+
+  const doShowTask = function(tasks){
+    const formatDateStr = function(d) {
+  		var yy, mm, dd, hh, mn;
+  		yy = d.getFullYear();
+  		if (d.getMonth() + 1 < 10) {
+  			mm = '0' + (d.getMonth() + 1);
+  		} else {
+  			mm = '' + (d.getMonth() + 1);
+  		}
+  		if (d.getDate() < 10) {
+  			dd = '0' + d.getDate();
+  		} else {
+  			dd = '' + d.getDate();
+  		}
+      if (d.getHours() < 10) {
+        hh = '0' + d.getHours();
+      } else {
+        hh = '' + d.getHours();
+      }
+      if (d.getMinutes() < 10){
+        mn = '0' + d.getMinutes();
+      } else {
+        mn = '' + d.getMinutes();
+      }
+  		var td = `${yy}-${mm}-${dd} ${hh}:${mn}`;
+  		return td;
+  	}
+
+    let radAlertInfo = $('<div></div>');
+    //{"status":{"code":200},"Records":[{"caseId":2837,"username":"demo","radioUsername":"test0003","triggerAt":"2022-03-12T07:50:05.348Z"}]}
+    console.log(tasks);
+    if ((tasks.length > 0) && (tasks[0])) {
+      tasks.forEach((item, i) => {
+        let d = new Date(item.triggerAt);
+        let dt = formatDateStr(d);
+        $(radAlertInfo).append($('<span>กำหนดหมดเวลาที่ : ' + dt + '</span>'));
+      });
+    } else {
+      $(radAlertInfo).append($('<span>ไม่พบตัวกำหนดเวลา</span>'));
+    }
+    //$(radAlertInfo).text(JSON.stringify(tasks));
+    const radAlertOption = {
+      title: 'กำหนดเวลาตอบรับ/ส่งผลอ่าน',
+      msg: $(radAlertInfo),
+      width: '380px',
+      onOk: function(evt) {
+        radTaskBox.closeAlert();
+      },
+    }
+    let radTaskBox = $('body').radalert(radAlertOption);
+    $(radTaskBox.cancelCmd).hide();
+  }
+
+  const doLoadLast20Cases = function(evt){
+    let limit = $('#Limit').val();
+    let hospitalId = $('#HospitalID').val();
+    doCallLoadLast20Cases(hospitalId, limit).then(async (caseRes)=>{
+      console.log(caseRes);
+      $('#CaseList').empty();
+      let caseTable = await doShowCaseList(caseRes.Records);
+      $('#CaseList').append($(caseTable));
+    });
+  }
+
+  const doShowCaseList = function(cases){
+    return new Promise(async function(resolve, reject) {
+      let caseTable = $('<table width="100%" border="1" cellpadding="0" cellspacing="0"></table>');
+      let headerRow = $('<tr><td width="5%" align="center">#</td><td width="5%" align="center">Case ID</td><td width="15%" align="center">Created At</td><td width="20%" align="center">Patient Name</td><td width="5%" align="center">Radio ID</td><td width="5%" align="center">Status ID</td><td width="5%" align="center">User ID</td><td width="5%" align="center">Refer ID</td><td width="*" align="center">CMD</td></tr>');
+      $(headerRow).css({'background-color': 'grey', 'color': 'white'});
+      $(caseTable).append($(headerRow));
+      let promiseList = new Promise(async function(resolve2, reject2) {
+        for (let i=0; i < cases.length; i++){
+          let openCaseLogCmd = $('<input type="button" value="Log"/>');
+          $(openCaseLogCmd).on('click', (evt)=>{
+            doOpenCaseLog(cases[i].id);
+          });
+
+          let itemRow = $('<tr></tr>');
+          $(itemRow).appendTo($(caseTable));
+          $(itemRow).append($('<td align="center">' + (i+1) + '</td>'));
+          $(itemRow).append($('<td align="center">' + cases[i].id + '</td>'));
+          let caseCreateAt = cases[i].createdAt;
+
+          let d = new Date(caseCreateAt);
+          let casedate = formatDateStr(d);
+          let casetime = formatTimeStr(d);
+
+          $(itemRow).append($('<td align="left">' + casedate + ' : ' + casetime + '</td>'));
+          $(itemRow).append($('<td align="left">' + cases[i].patient.Patient_NameEN + ' ' + cases[i].patient.Patient_LastNameEN + '</td>'));
+          let radioCol = $('<td align="center"></td>');
+          let radioIdCell = $('<span class="tooltiptext">' + cases[i].Case_RadiologistId + '</span>');
+          $(radioIdCell).on('mouseover', (evt)=>{
+            doLoadRadioFullName(cases[i].Case_RadiologistId).then((callRes)=>{
+              console.log(callRes.user[0]);
+              let radioFN = callRes.user[0].userinfo.User_NameTH + ' ' + callRes.user[0].userinfo.User_LastNameTH;
+              $(radioIdCell).prop('title', radioFN);
+            });
+          });
+          $(itemRow).append($(radioCol));
+          $(radioCol).append($(radioIdCell));
+          $(itemRow).append($('<td align="center">' + cases[i].casestatusId + '</td>'));
+          $(itemRow).append($('<td align="center">' + cases[i].userId + '</td>'));
+          let referCol = $('<td align="center"></td>');
+          let referIdCell = $('<span class="tooltiptext">' + cases[i].Case_RefferalId + '</span>');
+          $(referIdCell).css({'cursor': 'pointer'});
+          $(referIdCell).on('click', (evt)=>{
+            doChangeRefer(cases[i]);
+          });
+          $(referCol).append($(referIdCell));
+          $(itemRow).append($(referCol));
+          let cmdCol = $('<td align="center"></td>');
+          $(itemRow).append($(cmdCol));
+          let isEditResponse = contains.call(editResponseStatus, cases[i].casestatusId);
+          if (isEditResponse){
+            let reSubmitCmd = $('<input type="button" value="Re-Submit"/>');
+            $(reSubmitCmd).on('click', (evt)=>{
+              doResubmitReport(cases[i].id);
+            });
+            let openResultCmd = $('<input type="button" value="Open"/>');
+            $(openResultCmd).on('click', (evt)=>{
+              doOpenResult(cases[i].id);
+            });
+            $(cmdCol).append($(openResultCmd));
+            $(cmdCol).append($('<span>  </span>'));
+            $(cmdCol).append($(reSubmitCmd));
+            $(cmdCol).append($('<span>  </span>'));
+            $(cmdCol).append($(openCaseLogCmd));
+          } else {
+            $(cmdCol).append($('<span>  </span>'));
+            let reDicomCmd = $('<input type="button" value="Re-Dicom"/>');
+            $(reDicomCmd).on('click', (evt)=>{
+              doReDicomLog(cases[i].hospitalId, cases[i].Case_OrthancStudyID);
+            });
+            $(cmdCol).append($(reDicomCmd));
+            $(cmdCol).append($('<span>  </span>'));
+            $(cmdCol).append($(openCaseLogCmd));
+          }
+          let isAliveResponse = contains.call([1, 2, 8, 9], cases[i].casestatusId);
+          if (isAliveResponse){
+            let showTaskCmd = $('<input type="button" value="Task"/>');
+            $(showTaskCmd).on('click', (evt)=>{
+              doOpenTask(cases[i].id);
+            });
+            $(cmdCol).append($('<span>  </span>'));
+            $(cmdCol).append($(showTaskCmd));
+          }
+          let reZipCmd = $('<input type="button" value="Re-Zip"/>');
+          $(reZipCmd).on('click', (evt)=>{
+            doReZipCase(cases[i].hospitalId, cases[i].userId, cases[i].Case_OrthancStudyID, cases[i].Case_DicomZipFilename);
+          });
+          $(cmdCol).append($(reZipCmd).css({'margin-left': '5px'}));
+          if (cases[i].casestatusId != 7) {
+            let cancelCaseCmd = $('<input type="button" value="Cancel"/>');
+            $(cancelCaseCmd).on('click', (evt)=>{
+              doCancelCase(cases[i].id, cases[i].hospitalId, cases[i].userId,);
+            });
+            $(cmdCol).append($(cancelCaseCmd).css({'margin-left': '5px'}));
+          }
+        }
+        setTimeout(()=> {
+          resolve2($(caseTable));
+        },500);
+      });
+      Promise.all([promiseList]).then((ob)=> {
+        resolve(ob[0])
+      });
+    });
+  }
+
+  const editResponseStatus = [5, 6, 10, 11, 12, 14];
+
+  const contains = function(needle) {
+    // Per spec, the way to identify NaN is that it is not equal to itself
+    var findNaN = needle !== needle;
+    var indexOf;
+
+    if(!findNaN && typeof Array.prototype.indexOf === 'function') {
+      indexOf = Array.prototype.indexOf;
+    } else {
+      indexOf = function(needle) {
+        var i = -1, index = -1;
+
+        for(i = 0; i < this.length; i++) {
+          var item = this[i];
+
+          if((findNaN && item !== item) || item === needle) {
+            index = i;
+            break;
+          }
+        }
+
+        return index;
+      };
+    }
+    return indexOf.call(this, needle) > -1;
+  }
+
+  const formatDateStr = function(d) {
+		var yy, mm, dd;
+		yy = d.getFullYear();
+		if (d.getMonth() + 1 < 10) {
+			mm = '0' + (d.getMonth() + 1);
+		} else {
+			mm = '' + (d.getMonth() + 1);
+		}
+		if (d.getDate() < 10) {
+			dd = '0' + d.getDate();
+		} else {
+			dd = '' + d.getDate();
+		}
+		var td = `${yy}-${mm}-${dd}`;
+		return td;
+	}
+
+	const formatTimeStr = function(d) {
+		var hh, mn, ss;
+		hh = d.getHours();
+    if (hh < 10){
+      hh = '0' + hh;
+    }
+		mn = d.getMinutes();
+    if (mn < 10){
+      mn = '0' + mn;
+    }
+		ss = d.getSeconds();
+    if (ss < 10){
+      ss = '0' + ss;
+    }
+		var td = `${hh}:${mn}:${ss}`;
+		return td;
+	}
+
+  function doChangeRefer(caseData){
+    let newReferIdInput = $('<input type="text" id="NewReferIdInput" size="15"/>');
+    let radAlertMsg = $('<div></div>');
+    $(radAlertMsg).append($('<label for="NewReferIdInput">New Refferal Id :</label>'));
+    $(radAlertMsg).append($(newReferIdInput));
+    const radconfirmoption = {
+      title: 'เปลี่ยนไอดีหมอเจ้าของไข้',
+      msg: $(radAlertMsg),
+      width: '320px',
+      okLabel: ' บันทึก ',
+      onOk: function(evt) {
+        let newReferId = $(newReferIdInput).val();
+        if ((newReferId) && (Number(newReferId) > 0)) {
+          $(newReferIdInput).css({'border': ''});
+          $.get('/api/cases/reset/refer/' + caseData.id + '/' + newReferId, {}, function(response){
+            console.log(response);
+            if((response.status.code === 200)) {
+              console.log('SUCCESS');
+              alert('เปลี่ยนไอดีหมอเจ้าของไข้');
+              radConfirmBox.closeAlert();
+              $('#LoadCaseCmd').click();
+            } else {
+              $(newReferIdInput).css({'border': '1px solid red'});
+            }
+          });
+        } else {
+          $(newReferIdInput).css({'border': '1px solid red'});
+        }
+      },
+      onCancel: function(evt) {
+        radConfirmBox.closeAlert();
+      }
+    }
+    let radConfirmBox = $('body').radalert(radconfirmoption);
+  }
+
+</script>
+
+<style>
+  .tooltip {
+  	position: relative;
+  	display: inline-block;
+  	border-bottom: 1px dotted black;
+  }
+
+  .tooltip .tooltiptext {
+  	visibility: hidden;
+  	width: 120px;
+  	background-color: #555;
+  	color: #fff;
+  	text-align: center;
+  	border-radius: 6px;
+  	padding: 5px 0;
+  	position: absolute;
+  	z-index: 1;
+  	bottom: 125%;
+  	left: 50%;
+  	margin-left: -60px;
+  	opacity: 0;
+  	transition: opacity 0.3s;
+  }
+
+  .tooltip .tooltiptext::after {
+  	content: "";
+  	position: absolute;
+  	top: 100%;
+  	left: 50%;
+  	margin-left: -5px;
+  	border-width: 5px;
+  	border-style: solid;
+  	border-color: #555 transparent transparent transparent;
+  }
+
+  .tooltip:hover .tooltiptext {
+  	visibility: visible;
+  	opacity: 1;
+  }
+</style>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+    <title>Rad Connext</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  	<script type="text/javascript" src="../../lib/jquery.js"></script>
+  	<script type="text/javascript" src="../../lib/jquery-ui.min.js"></script>
+  	<script type="text/javascript" src="../../lib/jquery.loading.min.js"></script>
+    <script type="text/javascript" src="../../lib/notify.min.js"></script>
+    <link rel='stylesheet' href='../../lib/jquery-ui.min.css' />
+    <link rel='stylesheet' href='../../stylesheets/style.css' />
+  </head>
+  <body>
+    <div id="input-div">
+    	<div>
+        <label>CaseId:</label>
+        <input type="text" id="CaseId"/>
+      </div>
+      <div>
+        <label>Remark:</label>
+        <input type="text" id="Remark"/>
+      </div>
+      <div>
+        <input type="button" id="CancelCmd" value="Cancel"/>
+      </div>
+    </div>
+  </body>
+</html>
+<style>
+
+</style>
+<script type="text/javascript">
+
+console.log(localStorage.getItem('token'));
+
+$.ajaxSetup({
+  beforeSend: function(xhr) {
+    xhr.setRequestHeader('Authorization', localStorage.getItem('token'));
+  }
+});
+let userdata = JSON.parse(localStorage.getItem('userdata'));
+console.log(userdata);
+let loadCaseUrl = '/api/cases/load/list/by/status/owner';
+let userId = userdata.id;
+let casestatusIds = [[1], [2, 3, 4, 8, 9, 10, 11, 13, 14]];
+let loadParam = {userId: userId, casestatusIds: casestatusIds}
+$.post(loadCaseUrl, loadParam).then((response) => {
+  console.log(response);
+});
+
+$('#CancelCmd').on('click', (evt)=>{
+  let caseId = $('#CaseId').val();
+  let remark = $('#Remark').val();
+  if ((caseId) && (Number(caseId) > 0)) {
+    let params = {caseId: caseId, casestatusId: 7, caseDescription: remark};
+    let cancelUrl = '/api/cases/status/shortcut/' + caseId;
+    $.post(cancelUrl, params).then((response) => {
+      console.log(response);
+    });
+  } else{
+    alert('CaseId will not Empty and must be grether than zero.!')
+  }
+});
+
+</script>

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <meta charset="utf-8">
+   <link href="../favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>My Share Home</title>
+   <script type="text/javascript" src="../lib/jquery.js"></script>
+   <script type="text/javascript" src="../lib/jquery-ui.min.js"></script>
+   <script type="text/javascript" src="../lib/plugin/jquery-radutil-plugin.js"></script>
+   <script type="text/javascript" src="./editor-tools.js"></script>
+
+   <link href="../lib/jquery-ui.min.css" rel="stylesheet">
+
+   <style>
+     @font-face { font-family: EkkamaiStandard; src: url("../font/EkkamaiStandard-Light.ttf");}
+     body {font-family: EkkamaiStandard;}
+   </style>
+ </head>
+ <body>
+ </body>
+</html>
+<script type="text/javascript">
+  Array.prototype.random = function () {
+    return this[Math.floor((Math.random()*this.length))];
+  }
+  File.prototype.toObject = function () {
+    return Object({
+    lastModified: parseInt(this.lastModified),
+    lastModifiedDate: String(this.lastModifiedDate),
+    name: String(this.name),
+    size: parseInt(this.size),
+    type: String(this.type)
+    })
+  }
+  FileList.prototype.toArray = function () {
+    return Array.from(this).map(function (file) {
+      return file.toObject()
+    })
+  }
+
+  const doCreateShareCmd = function(myLiffUrl){
+    //let myLiffUrl = 'https://liff.line.me/1655999531-z5xnKvpR?id=' + id;
+    let lineShareIconCmd = $('<img src="/images/wide-default.png" style="cursor: pointer; width: 100px; height: auto;" title="แชร์ภาพเข้าห้องแช็ทของไลน์"/>');
+    $(lineShareIconCmd).on('click', (evt)=>{
+      let linkTarget = 'https://social-plugins.line.me/lineit/share?url=' + myLiffUrl;
+      window.open(linkTarget, '_blank');
+    });
+    return $(lineShareIconCmd);
+  }
+  const doCreateDownloadCmd = function(imgSrc){
+    let downloadIconCmd = $('<img src="/images/download-icon-2.png" style="cursor: pointer; margin-left: 10px; width: 100px; height: auto;" title="ดาวน์โหลดภาพ"/>');
+    $(downloadIconCmd).on('click', (evt)=>{
+      let imgPaths = imgSrc.split('/');
+      let saveFileName = imgPaths[imgPaths.length-1];
+      let pom = document.createElement('a');
+      pom.setAttribute('href', imgSrc);
+      pom.setAttribute('download', saveFileName);
+      pom.click();
+    });
+    return $(downloadIconCmd);
+  }
+  const doCreateCustomEditorCmd = function(){
+    let openCustomEditorCmdCmd = $('<img src="/images/image-icon.png" style="cursor: pointer; margin-left: 20px; width: 80px; height: auto;" title="ฉันอยากมีภาพแบบนี้ด้วย"/>');
+    $(openCustomEditorCmdCmd).on('click', (evt)=>{
+      doOpenEditor();
+    });
+    return $(openCustomEditorCmdCmd).css({'position': 'relative', 'display': 'inline-block', 'top': '16px'});
+  }
+  const doCreateImgBox = function(imgUrl) {
+    let img = new Image();
+    img.src = imgUrl;
+    img.id = "ImgBox";
+    img.onload = function() {
+      if (this.width > screen.width) {
+        $(this).css({'width': '100%', 'margin-top': '50px'});
+      }
+    };
+    return $(img);
+  }
+  const doCreateVideoBox = function(videoUrl) {
+    let video = $('<video></video>');
+    $(video).attr('src', videoUrl);
+    $(video).attr('controls', true);
+    $(video).attr('autoplay', true);
+    $(video).attr('crossorigin', 'anonymous');
+    $(video).css({'width': '330px', 'height': 'auto', 'margin-top': '50px'});
+    return $(video);
+  }
+  const doCreateMediaBox = function(shareId) {
+    return new Promise(async function(resolve, reject) {
+      let getMineTypeUrl =   '/api/shop/share/minetype/' + shareId;
+      $.post(getMineTypeUrl, {}, function(res){
+        let mediaUrl = '/shop/img/usr/qrcode/' + shareId;
+        if (res.minetype === 'png'){
+          let imageUrl = mediaUrl + '.png';
+          let imageBox = doCreateImgBox(imageUrl);
+          resolve($(imageBox));
+        } else if (res.minetype === 'mp4'){
+          let videoUrl = mediaUrl + '.mp4';
+          let videoBox = doCreateVideoBox(videoUrl);
+          resolve($(videoBox));
+        }
+      });
+    });
+  }
+  const queryString = decodeURIComponent(window.location.search).replace("?liff.state=", "");
+  const params = new URLSearchParams(queryString);
+
+  let id = params.get('id');
+  if (!id) {
+    id = 'myqrcode';
+  }
+
+  const shopHomeUrl = 'https://radconnext.tech/shop'
+  const imageUrl = '/img/usr/qrcode/' + id + '.png';
+  const shareUrl = shopHomeUrl + '/share/?id=' + id;
+  const shareCmd = doCreateShareCmd(shareUrl);
+  const downloadCmd = doCreateDownloadCmd('/shop' + imageUrl);
+  const openCustomEditor = doCreateCustomEditorCmd();
+  const announceBox = $('<div style="width: 100%; text-align: left;"></div>');
+
+  const viewPage = $('<div style="width: 100%; text-align: center;"></div>');
+  const sponsorBox = $('<div style="position: relative; min-height: 120px; width: 100%; text-align: center; border: 2px solid #ddd;" tabindex="1"></div>');
+  const bottomBar = $('<div style="width: 100%; text-align: center;"></div>');
+
+  (async ()=>{
+    //const imgBox = doCreateImgBox('/shop' + imageUrl);
+    const mediaBox = await doCreateMediaBox(id);
+    let mediaTypes = $(mediaBox).attr('src').split('.');
+    //console.log(mediaTypes);
+    if (mediaTypes[1] === 'png') {
+      $(bottomBar).append($(downloadCmd)).append($(shareCmd)).append($(openCustomEditor));
+    } else {
+      $(bottomBar).append($(shareCmd)).append($(openCustomEditor));
+    }
+    $(viewPage).append($(sponsorBox)).append($(announceBox)).append($(mediaBox)).append($(bottomBar));
+    $('body').append($(viewPage)).css({'text-align': 'center'});
+  })();
+
+  /***************************************************************/
+          /****  Control Play Sport Box *****7
+  /***************************************************************/
+  const doCallSponsorListFile = function(seriesUrl) {
+    return new Promise(function(resolve, reject) {
+      let params = {};
+      $.post(seriesUrl, params, function(data){
+        resolve(data);
+      }).fail(function(error) {
+        reject(error);
+      });
+    });
+  }
+  const doLoadImageFiles = function(seriesUrl){
+    return new Promise(async function(resolve, reject) {
+      let sponsorImages = await doCallSponsorListFile(seriesUrl);
+      let imageFiles = [];
+      await sponsorImages.forEach((item, i) => {
+        //if (item.indexOf('0000') == 0) {
+        let imageLink = 'https://radconnext.tech/shop/img/usr/upload/' + sponsorSeriesName + '/' + item;
+        imageFiles.push(imageLink);
+        //}
+      });
+      resolve(imageFiles);
+    });
+  }
+  const doCreateFileChooser = function(callback){
+    let fileChooser = $('<input type="file" multiple accept="video/*, image/png, image/jpeg, audio/mp3"/>');
+    $(fileChooser).css({'display': 'none'});
+    $(fileChooser).on('change', (evt)=> {
+      let fileChooses = evt.currentTarget.files;
+      callback(fileChooses);
+    });
+    return $(fileChooser);
+  }
+  const doCreateSlidePlayOptionForm = function(callback){
+    let wrapperBox = $('<div></div>');
+    let closeOrderTable = $('<table width="100%" cellspacing="0" cellpadding="0" border="0"></table>');
+    let dataRow = $('<tr></tr>').css({'height': '40px'});
+    $(dataRow).append($('<td width="50%" align="left"><b>Delay</b></td>'));
+    let delayInput = $('<input id="DelayTime" type="number"/><span> วินาที</span>').css({'width': '80px'}).val(playOptions.delay);
+    let delayInputCell = $('<td align="left"></td>');
+    $(delayInputCell).append($(delayInput))
+    $(dataRow).append($(delayInputCell));
+    $(closeOrderTable).append($(dataRow));
+    dataRow = $('<tr></tr>').css({'height': '40px'});
+    $(dataRow).append($('<td align="left"><b>Mode</b></td>'));
+    let modeSelector = $('<select id="PlayMode"></select>');
+    $(modeSelector).append($('<option value="random">Random</option>'));
+    $(modeSelector).append($('<option value="normal">Normal</option>'));
+    $(modeSelector).val(playOptions.mode);
+    let modeSelectorCell = $('<td align="left"></td>');
+    $(modeSelectorCell).append($(modeSelector));
+    $(dataRow).append($(modeSelectorCell));
+    $(closeOrderTable).append($(dataRow));
+    dataRow = $('<tr></tr>').css({'height': '40px'});
+    $(dataRow).append($('<td align="left"><b>Show File Name</b></td>'));
+    let showFileNameSelector = $('<select id="ShowFileName"></select>');
+    $(showFileNameSelector).append($('<option value="true">Yes</option>'));
+    $(showFileNameSelector).append($('<option value="false">No</option>'));
+    $(showFileNameSelector).val(playOptions.showFileName.toString());
+    let showFileNameSelectorCell = $('<td align="left"></td>');
+    $(showFileNameSelectorCell).append($(showFileNameSelector));
+    $(dataRow).append($(showFileNameSelectorCell));
+    $(closeOrderTable).append($(dataRow));
+
+
+    dataRow = $('<tr></tr>').css({'height': '40px'});
+    $(dataRow).append($('<td align="left"><b>Move Box</b></td>'));
+    let moveBoxSelector = $('<select id="MoveBox"></select>');
+    $(moveBoxSelector).append($('<option value="true">Yes</option>'));
+    $(moveBoxSelector).append($('<option value="false">No</option>'));
+    $(moveBoxSelector).val(playOptions.canmove.toString());
+    let moveBoxSelectorCell = $('<td align="left"></td>');
+    $(moveBoxSelectorCell).append($(moveBoxSelector));
+    $(dataRow).append($(moveBoxSelectorCell));
+    $(closeOrderTable).append($(dataRow));
+
+
+    dataRow = $('<tr></tr>').css({'height': '40px'});
+    $(dataRow).append($('<td align="left"><b>Image Size</b></td>'));
+    let imageSizeInput = $('<input id="ImageSize" type="number"/><span> px</span>').css({'width': '80px'}).val(playOptions.imageSize);
+    let imageSizeInputCell = $('<td align="left"></td>');
+    $(imageSizeInputCell).append($(imageSizeInput))
+    $(dataRow).append($(imageSizeInputCell));
+    $(closeOrderTable).append($(dataRow));
+    dataRow = $('<tr></tr>').css({'height': '40px'});
+    $(dataRow).append($('<td align="left"><b>Local File</b></td>'));
+    let fileChooserCmd = $('<input id="FileChoosor" type="button" value="เลือกภาพ ..."/>').css({'width': '180px'});
+    $(fileChooserCmd).on('click', (evt)=>{
+      let fileChooser = doCreateFileChooser((imgFiles)=>{
+        imageFiles = imgFiles;
+        maximum = imageFiles.length - 1;
+        currentPlaySportIndex = 0;
+        reCreateImg(currentPlaySportIndex);
+      });
+      $(fileChooser).click();
+    });
+    $(imageSizeInput).on('keypress',function(evt) {
+      if(evt.which == 13) {
+        playOptions = {
+          delay: Number($(delayInput).val()),
+          mode: $(modeSelector).val(),
+          showFileName: ($(showFileNameSelector).val()=='true')?true:false,
+          canmove: ($(moveBoxSelector).val()=='true')?true:false,
+          imageSize: Number($(imageSizeInput).val())
+        }
+        if (playOptions.canmove) {
+          $(sponsorBox).draggable({containment: "parent"});
+        } else {
+          $(sponsorBox).draggable('destroy');
+        }
+        callback(playOptions);
+      };
+    });
+    let fileChoosorCell = $('<td align="left"></td>');
+    $(fileChoosorCell).append($(fileChooserCmd));
+    $(dataRow).append($(fileChoosorCell));
+    $(closeOrderTable).append($(dataRow));
+    return $(wrapperBox).append($(closeOrderTable));
+  }
+  const doOpenSettingForm = function(evt, callback){
+    const customerDlgContent = doCreateSlidePlayOptionForm((newOptopns)=>{
+      playOptions = newOptopns;
+      customerFormBoxHandle.closeAlert();
+      callback(playOptions);
+    });
+    $(customerDlgContent).css({'margin-top': '10px'});
+    const customerformoption = {
+      title: 'ตั้งค่าเล่นสไลด์',
+      msg: $(customerDlgContent),
+      width: '420px',
+      onOk: function(evt) {
+        playOptions = {
+          delay: Number($(customerDlgContent).find('#DelayTime').val()),
+          mode: $(customerDlgContent).find('#PlayMode').val(),
+          showFileName: ($(customerDlgContent).find('#ShowFileName').val()=='true')?true:false,
+          canmove: ($(customerDlgContent).find('#MoveBox').val()=='true')?true:false,
+          imageSize: Number($(customerDlgContent).find('#ImageSize').val())
+        }
+        if (playOptions.canmove) {
+          $(sponsorBox).draggable({containment: "parent"});
+        } else {
+          $(sponsorBox).draggable('destroy');
+        }
+        customerFormBoxHandle.closeAlert();
+        callback(playOptions);
+      },
+      onCancel: function(evt){
+        customerFormBoxHandle.closeAlert();
+      }
+    }
+    let customerFormBoxHandle = $('body').radalert(customerformoption);
+  }
+  const editPlaySettingCmd = $('<img src="../../images/tools-icon.png"/>').css({'position': 'absolute', 'width': '35px', 'height': 'auto', 'cursor': 'pointer', 'right': '2px', 'bottom': '2px', 'display': 'none', 'z-index': '21'});
+  $(editPlaySettingCmd).attr('title', 'ตั้งค่า');
+  $(sponsorBox).hover(()=>{
+    $(editPlaySettingCmd).show();
+  },()=>{
+    $(editPlaySettingCmd).hide();
+  });
+
+  const reCreateImg = function(n){
+    let foundImg = doFindImage(n);
+    let imageLink = foundImg.imageLink;
+    let fileId = foundImg.fileId;
+    doCreateImg(imageLink, fileId, (img)=>{
+      $(sponsorBox).empty().append($(img));
+      if (playOptions.showFileName === true) {
+        $(sponsorBox).append($('<span>' + fileId + '</span>').css({'position': 'absolute', 'top': '2px', 'left': '2px', 'z-index': '11'}));
+      }
+      $(sponsorBox).append($(editPlaySettingCmd));
+      $(editPlaySettingCmd).on('click', (evt)=>{
+        doOpenSettingForm(evt, (newSettingValue)=>{
+          //doStartPlay();
+        });
+      });
+    });
+  }
+
+  const arrowKeydownEvt = function(evt, doStartPlay){
+    switch (evt.keyCode) {
+      case 39:
+        /* Arrow Right */
+        doStopSponsorTimer();
+        ++currentPlaySportIndex;
+        if (currentPlaySportIndex >= imageFiles.length) {
+          currentPlaySportIndex = 0;
+        }
+        reCreateImg(currentPlaySportIndex);
+      break;
+      case 37:
+        /* Arrow Left */
+        doStopSponsorTimer();
+        --currentPlaySportIndex;
+        if (currentPlaySportIndex < 0) {
+          currentPlaySportIndex = imageFiles.length - 1;
+        }
+        reCreateImg(currentPlaySportIndex);
+      break;
+      case 38:
+        /* Arrow Up */
+        doStopSponsorTimer();
+        doStartPlay();
+      break;
+      case 40:
+        /* Arrow Down */
+        doStopSponsorTimer();
+        doOpenSettingForm(evt, (newSettingValue)=>{
+          doStartPlay();
+        });
+      break;
+    }
+  }
+
+  let playOptions = {
+    delay: 7,
+    mode: 'normal',
+    showFileName: false,
+    canmove: false,
+    imageSize: 190
+  }
+  let imageFiles = [];
+  let minimum = 0;
+  let maximum = imageFiles.length - 1;
+  let currentPlaySportIndex = 0;
+  if (playOptions.mode == 'random') {
+    currentPlaySportIndex = Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
+  }
+  let sponsorTimer = undefined;
+
+  const doStopSponsorTimer = function() {
+    if (sponsorTimer) {
+      window.clearTimeout(sponsorTimer);
+    }
+  }
+
+  const doFindImage = function(n){
+    let fileId = undefined;
+    let imageLink = undefined;
+    if ((imageFiles) && (imageFiles.length > 0) && (typeof imageFiles[n] == 'string')) {
+      imageLink = imageFiles[n];
+      let fileUrls = imageLink.split('/');
+      fileId = fileUrls[fileUrls.length-1];
+    } else if ((imageFiles) && (imageFiles.length > 0) && (typeof imageFiles[n] == 'object')) {
+      let filesArray = imageFiles.toArray();
+      imageLink = window.URL.createObjectURL(imageFiles[n]);
+      fileId = filesArray[n].name;
+    } else {
+      fileId = '0000-770.jpg'
+      imageLink = 'https://radconnext.tech/img/usr/upload/' + sponsorSeriesName + '/' + fileId;
+    }
+    return {imageLink, fileId};
+  }
+
+  const doCreateImg = function(imageLink, fileId, loadSuccessCallback) {
+    let playImg = new Image();
+    playImg.src = imageLink;
+    playImg.id = fileId;
+    playImg.style.cursor = 'pointer';
+    playImg.onload = function() {
+      let w = $(this).width();
+      let h = $(this).height();
+      if (w > h) {
+        $(this).css({'width': 'auto', 'height': (playOptions.imageSize + 'px')});
+      } else {
+        $(this).css({'width': (playOptions.imageSize + 'px'), 'height': 'auto'});
+      }
+      $(this).on('click', (evt)=>{
+        openUrl = imageLink;
+        window.open(openUrl, '_blank');
+      });
+      loadSuccessCallback($(this));
+    }
+    return playImg;
+  }
+
+  const doCreateMySponsor = function(){
+    return new Promise(async function(resolve, reject) {
+      let imageLink = imageFiles[0];
+      const doStartPlay = function() {
+        doStopSponsorTimer();
+        sponsorTimer = window.setTimeout(()=>{
+          if (playOptions.mode == 'random') {
+            currentPlaySportIndex = Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
+          } else {
+            if (currentPlaySportIndex >= maximum) {
+              currentPlaySportIndex = 0
+            } else {
+              currentPlaySportIndex = currentPlaySportIndex + 1;
+            }
+          }
+          doPlaySport(currentPlaySportIndex);
+        }, playOptions.delay * 1000);
+      }
+      const doPlaySport = function(n){
+        let foundImg = doFindImage(n);
+        imageLink = foundImg.imageLink;
+        let fileId = foundImg.fileId;
+        if (fileId == '0000-770.jpg') {
+          doStartPlay();
+        } else {
+          doCreateImg(imageLink, fileId, (img)=>{
+            $(sponsorBox).empty().append($(img));
+            if (playOptions.showFileName === true) {
+              $(sponsorBox).append($('<span>' + fileId + '</span>').css({'position': 'absolute', 'top': '2px', 'left': '2px', 'z-index': '11'}));
+            }
+            $(sponsorBox).append($(editPlaySettingCmd));
+            $(editPlaySettingCmd).on('click', (evt)=>{
+              doOpenSettingForm(evt, (newSettingValue)=>{
+                doStartPlay();
+              });
+            });
+
+            doStartPlay();
+          });
+        }
+      }
+
+      doPlaySport(currentPlaySportIndex);
+
+      $(sponsorBox).on('keydown', (evt)=>{
+        arrowKeydownEvt(evt, doStartPlay);
+      });
+      $(sponsorBox).on('click', (evt)=>{
+        $(sponsorBox).focus();
+      });
+      resolve();
+    });
+  }
+
+  const sponsorSeriesName = 'sponsor-001'
+  const sponsorSeriesUrl = '/api/shop/usr/upload/series/' + sponsorSeriesName;
+  doLoadImageFiles(sponsorSeriesUrl).then((imgFiles)=>{
+    //console.log(imgFiles);
+    imageFiles = imgFiles;
+    maximum = imageFiles.length - 1;
+    doCreateMySponsor();
+  });
+
+  let announceHTML1 = '<h2 style="color: red;">อัพโหลดภาพของคุณมาเติมแต่งพร้อมแชร์ให้ผู้คนได้แล้ววันนี้</h2><p>หากคุณใช้อุปกรณ์ Desktop เปิดที่หน้านี้ คลิกที่ไอคอน ขวาล่าง เพื่ออัพโหลดภาพของคุณขึ้นมาตกแต่งตามแต่จินตนาการของคุณ แล้วแชร์ภาพสวยๆ ให้โลกเห็นง่ายๆ เป็นบริการฟรีสำหรับทุกคน</p><img src="/images/image-icon.png" style="width: 40px; heigth: auto; left: 50%; position: relative; transform: translateX(-50%);"/>'
+  let announceHTML2 = '<h2 style="color: red;">ขอช่วยพิจารณา</h2><p>โฆษณาสปอร์ตที่นำเสนออยู่ด้านบน</p><p>หากพิจารณาว่ามีประโยชน์โปรดช่วยแชร์ให้พรรคพวกเพื่อนฝูงญาติพี่น้องด้วยนะครับ</p><p>หากไม่เหมาะสมต้องขออภัยด้วยครับ</p>'
+  let announceHTMLs = [announceHTML1, announceHTML2];
+
+  $(announceBox).empty();
+  $(announceBox).html(announceHTMLs[1]).css({'line-height': '22px', 'border': '2px solid red'});
+  $(announceBox).slideDown('slow');
+  setTimeout(()=>{
+    $(announceBox).slideUp('slow');
+    $(announceBox).html(announceHTMLs[0]).css({'line-height': '22px', 'border': '2px solid red'});
+    $(announceBox).slideDown('slow');
+    setTimeout(()=>{
+      $(announceBox).slideUp('slow');
+      $(announceBox).empty();
+    }, 20000);
+  }, 20000);
+
+
+  let visitCounter = localStorage.getItem("page_view");
+  if (visitCounter) {
+    localStorage.setItem("page_view", (Number(visitCounter)+1));
+  } else {
+    localStorage.setItem("page_view", 1);
+  }
+  /*
+  if(typeof(EventSource) !== "undefined") {
+    $(announceBox).css({'background-color': 'green', 'color': 'white'});
+    var source = new EventSource("/sse/events");
+    source.onmessage = function(event) {
+      let data = JSON.parse(event.data);
+      if (data.info !== undefined) {
+        $(announceBox).append($('<p>' + data.info + '</p>'));
+        if ($(announceBox).css('display') === 'none') {
+          $(announceBox).slideDown('slow');
+          setTimeout(()=>{
+            $(announceBox).slideUp('slow');
+            $(announceBox).empty();
+          }, 20000);
+        } else {
+
+        }
+      }
+    };
+  } else {
+    $(announceBox).css({'background-color': 'grey', 'color': 'white'});
+  }
+  */
+</script>

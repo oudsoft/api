@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link href="icon.png" rel="shortcut icon" type="image/x-icon"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rad Connext Report Design</title>
+    <link href="../../lib/jquery-ui.min.css" rel="stylesheet">
+    <link href="../report.css" rel="stylesheet">
+    <script type="text/javascript" src="../../lib/jquery.js"></script>
+    <script type="text/javascript" src="../../lib/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="../../lib/simpleUpload.min.js"></script>
+  	<script type="text/javascript" src="../../lib/notify.min.js"></script>
+    <script type="text/javascript" src="../../lib/pdf/html2pdf.bundle.min.js"></script>
+  </head>
+  <body>
+    <div id="ContentBox">
+      <img src="/img/usr/download/12fe0b28-cad7.png"/>
+      <img src="/img/usr/download/77dbdcb2-bd4c.png"/>
+      <!--
+      <img src="/img/usr/download/f5bf37a1adb01ac4a1418185e10e06b9.png"/>
+      -->
+    </div>
+  </body>
+</html>
+
+<script type="text/javascript">
+  //https://pspdfkit.com/blog/2019/html-to-pdf-in-javascript/
+
+  $(document).ready(function() {
+    /*
+    $('#ContentBox').append('');
+    $('#ContentBox').append('');
+    $('#ContentBox').append('');
+    */
+    $('img').css({'border': '1px solid red', 'width': '850px', 'height': 'auto'});
+    const element = document.getElementById("ContentBox");
+    // Choose the element and save the PDF for our user.
+
+    html2pdf().set({ html2canvas: { scale: 1 } }).from(element).save();
+
+  });
+</script>

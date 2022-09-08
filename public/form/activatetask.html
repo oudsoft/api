@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link href="icon.png" rel="shortcut icon" type="image/x-icon"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rad Connext Report Design</title>
+    <link href="../lib/jquery-ui.min.css" rel="stylesheet">
+    <script type="text/javascript" src="../lib/jquery.js"></script>
+    <script type="text/javascript" src="../lib/jquery-ui.min.js"></script>
+  	<script type="text/javascript" src="../lib/notify.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div id="SelectUserTypeForm">
+        <label for="usertype"><b>ประเภทบัญชีใช้งาน</b></label>
+        <select id="usertype">
+          <option value="2">เจ้าหน้าที่ช่างเทคนิค</option>
+          <option value="3">เจ้าหน้าที่บัญชี</option>
+          <option value="5">แพทย์เจ้าของไข้</option>
+          <option value="4">รังสีแพทย์</option>
+        </select>
+        <button type="button" id="OKCmd">ตกลง</button>
+      </div>
+      <div id="SelectHospitalForm">
+        <label for="hostital"><b>โรงพยาบาลที่สังกัด</b></label>
+        <select id="hospital">
+        </select>
+        <button type="button" id="ActivateSubmitCmd">Activate</button>
+      </div>
+      <input type="hidden" id="email"/>
+      <input type="hidden" id="username"/>
+    </div>
+
+  </body>
+</html>
+
+<script type="text/javascript">
+  var usertypeId, hospitalId;
+
+  function urlQueryToObject(url) {
+  	let result = url.split(/[?&]/).slice(1).map(function(paramPair) {
+  				return paramPair.split(/=(.+)?/).slice(0, 2);
+  		}).reduce(function (obj, pairArray) {
+  				obj[pairArray[0]] = pairArray[1];
+  				return obj;
+          let password2 = $('#psw2').val();
+  		}, {});
+  	return result;
+  }
+
+  function doCallLoadHospitalList(){
+    return new Promise(function(resolve, reject) {
+      let resetPwdUrl = '/api/hospital/options';
+      let params = {};
+      $.post(resetPwdUrl, params, function(response){
+  			resolve(response);
+  		});
+    });
+  }
+
+  function doCallActivateAccount(params){
+    return new Promise(function(resolve, reject) {
+      let activateUrl = '/api/activatetask/activate';
+      $.post(activateUrl, params, function(response){
+  			resolve(response);
+  		});
+    });
+  }
+
+  $(document).ready(function() {
+    let queryObj = urlQueryToObject(window.location.href);
+    if (queryObj.taskId) {
+      $('#email').val(queryObj.taskId);
+      $('#username').val(queryObj.username);
+
+      $('#OKCmd').on('click', (evt)=>{
+        usertypeId = $('#usertype').val();
+        if (usertypeId != 4) {
+          doCallLoadHospitalList().then((callRes)=>{
+            callRes.Options.forEach((item, i) => {
+              let option = $('<option value="' + item.Value + '">' + item.DisplayText + '</option>');
+              $('#hospital').append($(option));
+            });
+          });
+          $('#SelectUserTypeForm').hide();
+          $('#SelectHospitalForm').show();
+        } else {
+          $('#hospital').val(1);
+          $('#ActivateSubmitCmd').click();
+        }
+      });
+      $('#ActivateSubmitCmd').on('click', (evt)=>{
+        if (usertypeId != 4) {
+          hospitalId = $('#hospital').val();
+        } else {
+          hospitalId = 1;
+        }
+        let email = $('#email').val();
+        let username = $('#username').val();
+
+        let activateParams = {email: email, username: username, usertypeId: usertypeId, hospitalId: hospitalId};
+        $('#SelectHospitalForm').hide();
+        doCallActivateAccount(activateParams).then((callRes)=>{
+          if (callRes.Task.email) {
+            $.notify('คุณ Active บัญชีใช้งานสำเร็จ', 'success');
+          } else {
+            $.notify('คุณ Active บัญชีใช้งานไม่สำเร็จ เนื่องจากเลยเวลาที่กำหนดไว้ 1 ชม.หลังจากได้รับอีเมล์', 'error');
+          }
+          $('.container').empty();
+          let gotoLogin = $('<a href="../index.html">กลับไปหน้า Login</a>');
+          $('.container').append($(gotoLogin));
+        });
+      });
+    } else {
+      $('#SelectUserTypeForm').hide();
+      let errorMsgBox = $('<div></div>');
+      $(errorMsgBox).text('Wrong Request!!!');
+      $(errorMsgBox).css({'background-color': 'red', 'color': 'white'});
+      $(errorMsgBox).appendTo($('.container'));
+    }
+  });
+
+
+</script>
+
+<style>
+  @font-face { font-family: EkkamaiStandard; src: url("../font/EkkamaiStandard-Light.ttf");}
+  body, button, select {
+    font-family: EkkamaiStandard;
+    font-size: 24px;
+    font-weight: normal;
+  }
+
+  #SelectHospitalForm {
+    display: none;
+  }
+
+  input[type=text] {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+  }
+
+  /* Set a style for all buttons */
+  button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+  }
+
+  button:hover {
+    opacity: 0.8;
+  }
+
+  .container {
+    padding: 200px 200px;
+  }
+
+  /* Add Zoom Animation */
+  .animate {
+    -webkit-animation: animatezoom 0.6s;
+    animation: animatezoom 0.6s
+  }
+
+  @-webkit-keyframes animatezoom {
+    from {-webkit-transform: scale(0)}
+    to {-webkit-transform: scale(1)}
+  }
+
+  @keyframes animatezoom {
+    from {transform: scale(0)}
+    to {transform: scale(1)}
+  }
+
+</style>

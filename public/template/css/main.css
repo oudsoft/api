@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@200&family=Prompt:wght@100&display=swap');
+html, body {
+  height: 100%;
+  margin: 0;
+}
+body {
+  font-family: 'Kanit', sans-serif;
+}
+
+/*
+  id => control position and size
+*/
+
+#HeaderBox{display: table; width: 100%; border-collapse: collapse;}
+#HeaderRow {display: table-row; width: 100%;}
+#LogoBox {display: table-cell; min-width: 380px; vertical-align: middle; text-align: center;}
+#HeaderContentBox {display: table-cell; width: 70.50%; vertical-align: middle; text-align: left;}
+#HeaderCmdBox {display: table-cell; width: 8%; /*vertical-align: middle;*/ text-align: center;}
+
+#ViewBox {display: table; width: 100%; border-collapse: collapse; }
+#ViewRow {display: table-row; width: 100%;}
+#ViewLeftCell {display: table-cell; min-width: 380px; vertical-align: top; text-align: left;}
+#UserProfileBox {position: relative; width: 100%; min-height: 160px;}
+#MenuContentBox {position: relative; width: 100%; min-height: 410px;}
+#ViewRightCell {display: table-cell; width:  80.50%; vertical-align: top; text-align: left;}
+#ContentBox {position: relative; width: 100%;}
+#FooterBox {position: absolute; width: 100%; min-height: 60px; line-height: 60px; top: 495px;}
+
+/*
+  class control style
+*/
+.page-header{}
+.header-logo {background-color: #184175; color: white;}
+.header-content {background-color: #184175; color: white; padding: 0 20px;}
+.header-cmd {background-color: #2261AE; color: white; text-align: center;}
+.page-menu {background-color: #2261AE; color: white;}
+.page-content {/*background-color: #F2F2F2; */}
+.content-titlepage {background-color: #E5E5E5; border-radius: 10px; margin: 0 10px; padding: 0 10px; min-height: :40px; line-height: 40px;}
+.content-content {background-color: #F2F2F2; margin: 0 10px;  padding: 0 10px;}
+.page-footer {background-color: #404040; color: white; text-align: center;}

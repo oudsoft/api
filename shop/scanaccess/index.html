@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <meta charset="utf-8">
+   <link href="../favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>My Share Home</title>
+   <script type="text/javascript" src="../lib/jquery.js"></script>
+   <script type="text/javascript" src="../lib/jquery-ui.min.js"></script>
+   <script type="text/javascript" src="../lib/plugin/jquery-radutil-plugin.js"></script>
+   <script type="text/javascript" src="./editor-tools.js"></script>
+
+   <link href="../lib/jquery-ui.min.css" rel="stylesheet">
+
+   <style>
+     @font-face { font-family: EkkamaiStandard; src: url("../font/EkkamaiStandard-Light.ttf");}
+     body {font-family: EkkamaiStandard;}
+   </style>
+ </head>
+ <body>
+ </body>
+</html>
+<script type="text/javascript">
+  const queryString = decodeURIComponent(window.location.search).replace("?liff.state=", "");
+  console.log(queryString);
+  const params = new URLSearchParams(queryString);
+  console.log(params);
+  let mid = params.get('mid');
+  let cid = params.get('cid');
+  if (mid) {
+    console.log(mid);
+  } else {
+    if (cid) {
+      console.log(cid);
+    }
+  }
+
+</script>

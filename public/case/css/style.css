@@ -1,0 +1,238 @@
+/* */
+
+.modal-footer {
+	text-align: center;
+}
+
+/* Tooltip */
+.tooltip {
+	position: relative;
+	display: inline-block;
+	border-bottom: 1px dotted black;
+}
+
+.tooltip .tooltiptext {
+	visibility: hidden;
+	width: 120px;
+	background-color: #555;
+	color: #fff;
+	text-align: center;
+	border-radius: 6px;
+	padding: 5px 0;
+	position: absolute;
+	z-index: 1;
+	bottom: 125%;
+	left: 50%;
+	margin-left: -60px;
+	opacity: 0;
+	transition: opacity 0.3s;
+}
+
+.tooltip .tooltiptext::after {
+	content: "";
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	margin-left: -5px;
+	border-width: 5px;
+	border-style: solid;
+	border-color: #555 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+	visibility: visible;
+	opacity: 1;
+}
+
+.study-desc {
+	border-radius: 10px;
+	border: 2px solid #73AD21;
+	padding: 5px;
+}
+.protoname {
+	margin-top: 3px;
+	border-radius: 10px;
+	border: 2px solid #0066ff;
+	padding: 5px;
+}
+.pacs-command {
+	width: 38px;
+	height: auto;
+	cursor: pointer;
+	padding: 4px;
+}
+.pacs-command-dd {
+	width: 50px;
+	height: auto;
+	cursor: pointer;
+	padding: 3px;
+}
+/*
+.header-row{
+	table-header-group; position: fixed;
+	width: 100%;
+}
+*/
+.header-cell {
+	padding: 2px;
+	font-weight: bold;
+	color: white;
+	text-align: center;
+	background-color: #184175;
+	border: 1px solid white;
+	line-height: 34px;
+	min-height: 34px;
+	/*
+	box-shadow: 0px 5px 5px gray;
+	-moz-box-shadow: 0px 5px 5px gray, ;
+	-webkit-box-shadow: 0px 5px 5px gray;
+	*/
+
+}
+.case-row {
+	background-color: #fbfbfb;
+	/*
+	box-shadow: 0px 5px 5px gray;
+	-moz-box-shadow: 0px 5px 5px gray, ;
+	-webkit-box-shadow: 0px 5px 5px gray;
+	*/
+}
+.case-row:hover {
+	background-color: #59A6FC;
+	/*
+	background-color: rgb(165, 182, 229);
+	box-shadow: 0px 2px 18px 0px rgba(0, 0, 0, 0.5);
+	*/
+	/* cursor: pointer; */
+}
+
+.row-selected {
+	background-color: #59A6FC;
+}
+
+.new-case-wrapper {
+	width: 98%; position: relative; margin-top: 70px; padding: 0 8px;
+}
+
+.table-header-row{
+	background-color: #184175;
+	color: white;
+}
+.scanpart-box {
+	border: 1px solid #184175;
+	border-radius: 3px;
+	text-align: left;
+	padding: 2px;
+}
+/*
+.radcon-button {
+	border: none;
+	color: white;
+	padding: 1px 16px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 20px;
+	margin: 4px 2px;
+	transition-duration: 0.4s;
+	cursor: pointer;
+	max-height: 30px;
+}
+
+.button-bw {
+	background-color: #184175;
+	color: white;
+}
+
+.button-bw:hover {
+	background-color: white;
+	color: black;
+	border: 2px solid #4CAF50;
+}
+*/
+
+/* Modal Dialog */
+.modal {
+	display: none; /* Hidden by default */
+	position: fixed; /* Stay in place */
+	z-index: 51; /* Sit on top */
+	left: 0;
+	top: 0;
+	width: 100%; /* Full width */
+	height: 100%; /* Full height */
+	overflow: auto; /* Enable scroll if needed */
+	background-color: rgb(0,0,0); /* Fallback color */
+	background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.modal-content {
+	background-color: #fefefe;
+	margin: 1% auto; /* 15% from the top and centered */
+	padding: 20px;
+	border: 1px solid #888;
+	width: 80%; /* Could be more or less, depending on screen size */
+	/*
+	font-family: THSarabunNew;
+	*/
+	font-family: 'Kanit', sans-serif;
+
+	font-size: 24px;
+	font-weight: normal;
+}
+
+.modal-header {
+	padding: 2px 2px;
+	background-color: #184175;
+	color: white;
+	display: block;
+	width: 100%;
+	max-height: 80px;
+	vertical-align: middle;
+	font-size: 30px;
+}
+
+.modal-footer {
+	padding: 2px 2px;
+	background-color: #184175;
+	color: white;
+	display: block;
+	width: 100%;
+	text-align: center;
+	vertical-align: middle;;
+}
+
+.remove {
+	width: 100%;
+	top: 0;
+	right: 0;
+	font-size: 30px;
+	cursor: pointer;
+}
+
+.img-thumb-active {
+	border: 2px solid yellow;
+}
+
+.accorhead {
+	display: block;
+	height: 40px;
+	line-height: 40px;
+	background-color: #FCCF36;
+	padding: 4;
+	width: inherit;
+	text-align: center;
+	margin-top: 10px;
+	cursor: pointer;
+}
+
+.accorcont {
+	display: none;
+  width: inherit;
+  height: auto;
+  border: 1px solid #ccc;
+}
+
+.accoractive {
+  background: #eee;
+  color: #000;
+}

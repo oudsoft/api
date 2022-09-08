@@ -1,0 +1,212 @@
+<div class="menu-hide">
+  <div id="NavHeader">
+  </div>
+
+  <!-- Home Menu -->
+  <div class="NavTable">
+    <div class="NavRow" id="HomeMainCmd">
+      <div class="NavRowIconCell">
+        <img src="/images/home-icon.png" width="30px" height="auto"/>
+      </div>
+      <div class="NavRowTextCell">
+        หน้าแรก
+      </div>
+      <div class="NavRowIconCell"></div>
+      <div class="NavRowIconCell">
+        <div class="arrow-left"></div>
+      </div>
+    </div>
+
+    <!-- NewCase Menu -->
+    <div class="NavRow" id="NewCaseCmd">
+      <div class="NavRowIconCell">
+        <img src="/images/new-case-icon.png" width="30px" height="auto"/>
+      </div>
+      <div class="NavRowTextCell">
+        แจ้งงานใหม่ <span class="case-counter"></span>
+      </div>
+      <div class="NavRowIconCell"></div>
+      <div class="NavRowIconCell">
+        <div class="arrow-left"></div>
+      </div>
+    </div>
+
+    <!-- AcceptedCase Menu -->
+    <div class="NavRow" id="AcceptedCaseCmd">
+      <div class="NavRowIconCell">
+        <img src="/images/case-incident-icon-2.png" width="30px" height="auto"/>
+      </div>
+      <div class="NavRowTextCell">
+        เคสรออ่าน <span class="case-counter"></span>
+      </div>
+      <div class="NavRowIconCell"></div>
+      <div class="NavRowIconCell">
+        <div class="arrow-left"></div>
+      </div>
+    </div>
+
+    <!-- AcceptedCase Menu -->
+    <div class="NavRow" id="SearchCaseCmd">
+      <div class="NavRowIconCell">
+        <img src="/images/search-icon-4.png" width="30px" height="auto"/>
+      </div>
+      <div class="NavRowTextCell">
+        เคสทั้งหมด
+      </div>
+      <div class="NavRowIconCell"></div>
+      <div class="NavRowIconCell">
+        <div class="arrow-left"></div>
+      </div>
+    </div>
+
+
+    <!-- Tools Menu -->
+    <div class="NavRow" id="ToolsMainCmd">
+      <div class="NavRowIconCell">
+        <img src="/images/tools-icon.png" width="30px" height="auto"/>
+      </div>
+      <div class="NavRowTextCell">
+        เครื่องมือ
+      </div>
+      <div class="NavRowIconCell"></div>
+      <div class="NavRowIconCell">
+        <div class="arrow-left"></div>
+      </div>
+    </div>
+    <div class="NavSubHide">
+      <div class="NavSub" id="UserProfileSubCmd">
+        <div class="NavSubIconCell"></div>
+        <div class="NavSubIconCell">
+          <img src="/images/setting-icon-2.png" width="30px" height="auto"/>
+        </div>
+        <div class="NavSubTextCell">
+          ตั้งค่าการแจ้งเตือนและรับเคส
+        </div>
+        <div class="NavSubIconCell">
+          <div class="arrow-left"></div>
+        </div>
+      </div>
+      <div class="NavSub" id="TemplateSubCmd">
+        <div class="NavSubIconCell"></div>
+        <div class="NavSubIconCell">
+          <img src="/images/format-design-icon.png" width="30px" height="auto"/>
+        </div>
+        <div class="NavSubTextCell">
+          Template
+        </div>
+        <div class="NavSubIconCell">
+          <div class="arrow-left"></div>
+        </div>
+      </div>
+      <div class="NavSub" id="UserInfoSubCmd">
+        <div class="NavSubIconCell"></div>
+        <div class="NavSubIconCell">
+          <img src="/images/user-info-icon.png" width="30px" height="auto"/>
+        </div>
+        <div class="NavSubTextCell">
+          ข้อมูลของฉัน
+        </div>
+        <div class="NavSubIconCell">
+          <div class="arrow-left"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let yourUserdata = JSON.parse(localStorage.getItem('userdata'));
+  function showCmdActive(cmdClick){
+    let myNavRow = $(cmdClick).parent().prev('.NavRow');
+    $(myNavRow).next('.NavSubHide').find('.NavSub').find('.arrow-left').hide();
+    $(cmdClick).find('.arrow-left').show();
+  }
+
+  function doRotate(elem, degree) {
+    // For webkit browsers: e.g. Chrome
+    $(elem).css({ WebkitTransform: 'rotate(' + degree + 'deg)'});
+    // For Mozilla browser: e.g. Firefox
+    $(elem).css({ '-moz-transform': 'rotate(' + degree + 'deg)'});
+  }
+
+  $('.NavRow').click(function (e){
+    let thisId = $(this).prop('id');
+    if($(this).next('.NavSubHide').css('display') !== 'block'){
+      $(this).addClass('NavActive');
+      $(this).find('.arrow-left').show();
+      $(this).next('.NavSubHide').slideDown('slow').removeClass('NavActive');
+      $('.NavRow').each((i, row)=>{
+        let rowId = $(row).prop('id');
+        if ((rowId !== thisId) && ($(row).hasClass('NavActive'))) {
+          $(row).next('.NavSubHide').find('.arrow-left').hide();
+          $(row).removeClass('NavActive');
+          $(row).find('.arrow-left').hide();
+          $(row).next('.NavSubHide').slideUp('fast').removeClass('NavActive');
+        }
+      });
+    } else {
+      $(this).removeClass('NavActive');
+      $(this).find('.arrow-left').hide();
+      $(this).next('.NavSubHide').slideUp('fast').removeClass('NavActive');
+    }
+  });
+
+  $('.NavSub').click((evt)=>{
+    showCmdActive(evt.currentTarget);
+    $('.NavSub').not($(evt.currentTarget)).removeClass('NavActive');
+    $(evt.currentTarget).addClass('NavActive');
+
+    let navSubHide = $(evt.currentTarget).parent();
+    let navRow = $(navSubHide).prev();
+    let arrow = $(navRow).find('.arrow-left');
+    doRotate(arrow, -90);
+  });
+
+  $('#HomeMainCmd').click((evt)=>{
+    let eventData = {userId: yourUserdata.id};
+    $('#HomeMainCmd').trigger('openhome', [eventData]);
+  });
+
+  $('#NewCaseCmd').click((evt)=>{
+    let eventData = {userId: yourUserdata.id};
+    $('#NewCaseCmd').trigger('opennewstatuscase', [eventData]);
+  });
+
+  $('#AcceptedCaseCmd').click((evt)=>{
+    let eventData = {userId: yourUserdata.id};
+    $('#AcceptedCaseCmd').trigger('openacceptedstatuscase', [eventData]);
+  });
+
+  $('#SearchCaseCmd').click((evt)=>{
+    let eventData = {userId: yourUserdata.id};
+    $('#SearchCaseCmd').trigger('opensearchcase', [eventData]);
+  });
+
+  $('#UserProfileSubCmd').click((evt)=>{
+    let eventData = {userId: yourUserdata.id};
+    $('#TemplateSubCmd').trigger('openprofile', [eventData]);
+  });
+
+  $('#TemplateSubCmd').click((evt)=>{
+    let eventData = {userId: yourUserdata.id};
+    $('#TemplateSubCmd').trigger('opentemplatedesign', [eventData]);
+  });
+
+  $('#UserInfoSubCmd').click((evt)=>{
+    let eventData = {userId: yourUserdata.id};
+    $('#UserInfoSubCmd').trigger('openedituserinfo', [eventData]);
+  });
+
+  let systemLogo = $('<img src="/images/logo/radconnext-logo.png" width="70%" height="auto" style="cursor: pointer; margin-top: 10px;"/>');
+  $(systemLogo).on('click', (evt)=>{
+    window.location.replace('/radio/index.html?t=1');
+  });
+  $('#NavHeader').append($(systemLogo));
+
+  $('.NavRowTextCell, .NavSubTextCell').css({'color': 'white'});
+  $('.NavRowTextCell, .NavSubTextCell').hover(
+    (evt)=>{$(evt.currentTarget).css({'color': 'black'})},
+    (evt)=>{$(evt.currentTarget).css({'color': 'white'})}
+  );
+
+</script>

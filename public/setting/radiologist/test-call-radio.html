@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+    <title>Rad Connext</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  	<script type="text/javascript" src="../../lib/jquery.js"></script>
+  	<script type="text/javascript" src="../../lib/jquery-ui.min.js"></script>
+  	<script type="text/javascript" src="../../lib/jquery.loading.min.js"></script>
+    <script type="text/javascript" src="../../lib/notify.min.js"></script>
+    <link rel='stylesheet' href='../../lib/jquery-ui.min.css' />
+    <link rel='stylesheet' href='../../stylesheets/style.css' />
+  </head>
+  <body>
+    <div id="ShowCaseList">
+      <div>
+        <label for="HospitalCode">Hospital:</label><span>  </span>
+        <select id="HospitalCode"></select><span>  </span>
+        <label for="UrgentCode">Urgent:</label><span>  </span>
+        <select id="UrgentCode"></select><span>  </span>
+        <label for="Msisdn">Phone No.:</label><span>  </span>
+        <input type="text" id="Msisdn" size="15"/><span>  </span>
+        <input type="button" id="TestCallCmd" value="Test."/>
+      </div>
+      <div id="CaseList"></div>
+    </div>
+  </body>
+</html>
+<script type="text/javascript">
+
+  $( document ).ready(function() {
+    console.log(localStorage.getItem('token'));
+
+    $.ajaxSetup({
+      beforeSend: function(xhr) {
+        xhr.setRequestHeader('Authorization', localStorage.getItem('token'));
+      }
+    });
+    let userdata = JSON.parse(localStorage.getItem('userdata'));
+    console.log(userdata);
+
+    initPage();
+
+    $('#TestCallCmd').on('click', (evt)=>{
+      doTestCall(evt);
+    });
+  });
+
+  const initPage = function(){
+    $('#HospitalCode').empty();
+    $('#HospitalCode').append($('<option value="lpt">รพ.หลวงพ่อทวีศักดิ์</option>'));
+    $('#HospitalCode').append($('<option value="wkr">รพ.เวชการุณย์</option>'));
+    $('#HospitalCode').append($('<option value="rpp">รพ.ราชพิพัฒน์</option>'));
+
+    $('#UrgentCode').empty();
+    $('#UrgentCode').append($('<option value="ct_neuro_emergency">ct_neuro_emergency</option>'));
+    $('#UrgentCode').append($('<option value="ct_neuro_fast_tract">ct_neuro_fast_tract</option>'));
+    $('#UrgentCode').append($('<option value="urgent_cta_neuro_body">urgent_cta_neuro_body</option>'));
+    $('#UrgentCode').append($('<option value="urgent">urgent</option>'));
+    $('#UrgentCode').append($('<option value="normal_24hr">normal_24hr</option>'));
+
+    $('#Msisdn').val('0825172674');
+    $('#Msisdn').on('keypress',function(evt) {
+      if(evt.which == 13) {
+        doTestCall(evt);
+      };
+    });
+  }
+
+  const doTestCall = function(evt){
+    let msisdn = $('#Msisdn').val();
+    if (msisdn != ''){
+      const phoneNoTHRegEx = /^[0]?[689]\d{8}$/;
+      let isCorrectFormat = phoneNoTHRegEx.test(msisdn);
+      if (isCorrectFormat){
+        $('#Msisdn').css('border', '');
+        let hospitalCode = $('#HospitalCode').val();
+        let urgentCode = $('#UrgentCode').val();
+        let params = {hospitalCode: hospitalCode, urgentCode: urgentCode, msisdn: msisdn};
+        let callUrl = '/api/voipapp/callradio';
+        $.post(callUrl, params).then((response) => {
+          console.log(response);
+          $('#Msisdn').val('');
+          $('#CaseList').empty().text(JSON.stringify(response));
+        });
+      } else {
+        $('#Msisdn').css('border', '1px solid red');
+        alert('เบอร์โทรศัพท์ไม่ถูกต้อง');
+      }
+    } else {
+      $('#Msisdn').css('border', '1px solid red');
+      alert('ยังไม่ป้อนเบอร์โทรศัพท์');
+    }
+  }
+</script>

@@ -1,0 +1,164 @@
+<div class="menu-hide">
+  <div id="NavHeader">
+  </div>
+
+  <!-- Home Menu -->
+  <div class="NavTable">
+    <div class="NavRow" id="HomeMainCmd">
+      <div class="NavRowIconCell">
+        <img src="/images/home-icon.png" width="30px" height="auto"/>
+      </div>
+      <div class="NavRowTextCell">
+        หน้าแรก
+      </div>
+    </div>
+
+    <!-- NewCase Menu -->
+    <div class="NavRow" id="BillingMainCmd">
+      <div class="NavRowIconCell">
+        <img src="/images/bill-icon.png" width="30px" height="auto"/>
+      </div>
+      <div class="NavRowTextCell">
+        การเงินและบัญชี
+      </div>
+    </div>
+    <div class="NavSubHide">
+      <div class="NavSub" id="BillingReportSubCmd">
+        <div class="NavSubIconCell"></div>
+        <div class="NavSubIconCell">
+          <img src="/images/bill-icon.png" width="30px" height="auto"/>
+        </div>
+        <div class="NavSubTextCell">
+          ออกบิล
+        </div>
+        <div class="NavSubIconCell">
+          <div class="arrow-left"></div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- Tools Menu -->
+    <div class="NavRow" id="ToolsMainCmd">
+      <div class="NavRowIconCell">
+        <img src="/images/tools-icon.png" width="30px" height="auto"/>
+      </div>
+      <div class="NavRowTextCell">
+        เครื่องมือ
+      </div>
+    </div>
+    <div class="NavSubHide">
+      <div class="NavSub" id="UserInfoSubCmd">
+        <div class="NavSubIconCell"></div>
+        <div class="NavSubIconCell">
+          <img src="/images/user-info-icon.png" width="30px" height="auto"/>
+        </div>
+        <div class="NavSubTextCell">
+          ข้อมูลของฉัน
+        </div>
+        <div class="NavSubIconCell">
+          <div class="arrow-left"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let yourUserdata = JSON.parse(localStorage.getItem('userdata'));
+
+  function showCmdActive(cmdClick){
+    let myNavRow = $(cmdClick).parent().prev('.NavRow');
+    $(myNavRow).next('.NavSubHide').find('.NavSub').find('.arrow-left').hide();
+    $(cmdClick).find('.arrow-left').show();
+  }
+
+  function doRotate(elem, degree) {
+    // For webkit browsers: e.g. Chrome
+    $(elem).css({ WebkitTransform: 'rotate(' + degree + 'deg)'});
+    // For Mozilla browser: e.g. Firefox
+    $(elem).css({ '-moz-transform': 'rotate(' + degree + 'deg)'});
+  }
+
+  $('.NavRow').click(function (e){
+    let thisId = $(this).prop('id');
+    if($(this).next('.NavSubHide').css('display') !== 'block'){
+      $(this).addClass('NavActive');
+      $(this).find('.arrow-left').show();
+      $(this).next('.NavSubHide').slideDown('slow').removeClass('NavActive');
+      $('.NavRow').each((i, row)=>{
+        let rowId = $(row).prop('id');
+        if ((rowId !== thisId) && ($(row).hasClass('NavActive'))) {
+          $(row).next('.NavSubHide').find('.arrow-left').hide();
+          $(row).removeClass('NavActive');
+          $(row).find('.arrow-left').hide();
+          $(row).next('.NavSubHide').slideUp('fast').removeClass('NavActive');
+        }
+      });
+    } else {
+      $(this).removeClass('NavActive');
+      $(this).find('.arrow-left').hide();
+      $(this).next('.NavSubHide').slideUp('fast').removeClass('NavActive');
+    }
+  });
+
+  $('.MenuCmd').click((evt)=>{
+    let cmdId = $(evt.currentTarget).prop('id');
+    let dd = $(evt.currentTarget).data('dd');
+    let dm = $(evt.currentTarget).data('dm');
+    let eventData = {userId: yourUserdata.id, cmdId: cmdId, studyFromDate: dd, modality: dm};
+    $(evt.currentTarget).trigger('openhome', [eventData]);
+    $('.MenuCmd').not($(evt.currentTarget)).removeClass('NavActive');
+    $(evt.currentTarget).addClass('NavActive');
+  });
+
+  $('.NavSub').click((evt)=>{
+    showCmdActive(evt.currentTarget);
+    $('.NavSub').not($(evt.currentTarget)).removeClass('NavActive');
+    $(evt.currentTarget).addClass('NavActive');
+
+    let navSubHide = $(evt.currentTarget).parent();
+    let navRow = $(navSubHide).prev();
+    let arrow = $(navRow).find('.arrow-left');
+    doRotate(arrow, -90);
+  });
+
+  $('#HomeMainCmd').click((evt)=>{
+    let eventData = {userId: yourUserdata.id};
+    $('#HomeMainCmd').trigger('openhome', [eventData]);
+  });
+
+  $('#BillingReportSubCmd').click((evt)=>{
+    let eventData = {userId: yourUserdata.id};
+    $('#BillingReportSubCmd').trigger('openbilling', [eventData]);
+  });
+
+
+  /*
+  ToolsMainCmd
+  UserInfoMainCmd
+  */
+  $('#UserInfoSubCmd').click((evt)=>{
+    let eventData = {userId: yourUserdata.id};
+    $('#UserInfoSubCmd').trigger('openedituserinfo', [eventData]);
+  });
+
+
+  let systemLogo = $('<img src="/images/logo/radconnext-logo.png" width="70%" height="auto" style="cursor: pointer; margin-top: 10px;"/>');
+  $(systemLogo).on('click', (evt)=>{
+    if (yourUserdata.usertypeId == 2) {
+      window.location.replace('/case/index.html?t=1');
+    } else if (yourUserdata.usertypeId == 5) {
+      window.location.replace('/refer/index.html?t=1');
+    }
+  });
+  $('#NavHeader').append($(systemLogo));
+
+  $('.NavRowTextCell, .NavSubTextCell').css({'color': 'white'});
+  $('.NavRowTextCell, .NavSubTextCell').hover(
+    (evt)=>{$(evt.currentTarget).css({'color': 'black'})},
+    (evt)=>{$(evt.currentTarget).css({'color': 'white'})}
+  );
+
+</script>

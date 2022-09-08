@@ -1,0 +1,32 @@
+{
+  "wb": {
+    "tech": {
+      "success": [
+        {"code": "", "name": "", "action": "", "event": "", "msg": ""}
+      ],
+      "error": [],
+      "info": [],
+      "warning": []
+    },
+    "radio": {
+      "success": [],
+      "error": [],
+      "info": [],
+      "warning": []
+    }
+  },
+  "lb": {
+    "tech": {
+      "success": [],
+      "error": [],
+      "info": [],
+      "warning": []
+    },
+    "radio": {
+      "success": [],
+      "error": [],
+      "info": [],
+      "warning": []
+    }
+  }
+}

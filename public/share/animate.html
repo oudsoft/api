@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link href="../favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Say Hello</title>
+    <script type="text/javascript" src="../lib/jquery.js"></script>
+    <script type="text/javascript" src="../lib/jquery-ui.min.js"></script>
+    <link href="../lib/jquery-ui.min.css" rel="stylesheet">
+    <!--
+  	<script type="text/javascript" src="bundle.js"></script>
+    -->
+  </head>
+  <body>
+    <div id="wrapper">
+      <div id="app">
+        <h1>Sain-Sura Studio</h1>
+        <h2>ขอขอบคุณ</h2>
+        <h3>ทุกท่านที่รับชม</h3>
+        <h3>สามารถแนะนำเพลงได้</h3>
+        <h3>แจ้งปัญหาการรับชมได้</h3>
+        <h3>ให้การสนับสนุนโดย</h3>
+        <h3>โครงการบ้านดีๆ บนทำเลทอง "บ้านเก็บทรัพย์" @สี่แยกเขาปีป จังหวัดชุมพร</h3>
+        <h3>ขนาด 55 ตร.ว. / 2 ห้องนอน / 2 ห้องน้ำ / 2 ช่องจอดรถ</h3>
+        <h3>ราคาเริ่มต้นที่ <b>1.5</b> ล้าน</h3>
+        <h3>โดย</h3>
+        <img src="/images/logo/srivilai.jpg" width="180" height="auto"/>
+        <h3>โทร</h3>
+        <h2>085-619-1446</h2>
+        <h2>099-782-3879</h2>
+      </div>
+    </div>
+  </body>
+</html>
+
+<style>
+  @font-face { font-family: EkkamaiStandard; src: url("../font/EkkamaiStandard-Light.ttf");}
+  @keyframes movingBottomToTop {
+    0% {
+      top: 100vh;
+    }
+    10% {
+      top: 80vh;
+    }
+    20% {
+      top: 60vh;
+    }
+    30% {
+      top: 40vh;
+    }
+    40% {
+      top: 20vh;
+    }
+    50% {
+      top: 0vh;
+    }
+
+    60% {
+      top: -20vh;
+    }
+    70% {
+      top: -40vh;
+    }
+    80% {
+      top: -60vh;
+    }
+    90% {
+      top: -80vh;
+    }
+    100% {
+      top: -140vh;
+    }
+  }
+  #wrapper {
+    position: relative;
+    width: 100%;
+    background: rgb(0, 0, 0);
+    height: calc(100vh - 0px);
+    box-sizing: border-box;
+  }
+  #app {
+    position: absolute;
+    width: 100%;
+    padding: 2px;
+    text-align: center;
+    font-family: 'EkkamaiStandard';
+    color: white;
+  }
+  .slideup {
+    animation: movingBottomToTop 20s linear infinite;
+  }
+</style>
+
+<script type="text/javascript">
+  $( document ).ready(function() {
+    $('#app').hide();
+    $('#wrapper').on('click', (evt)=>{
+      $('#app').addClass('slideup');
+      $('#app').show();
+    });
+  });
+</script>

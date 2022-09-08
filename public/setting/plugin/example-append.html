@@ -1,0 +1,21 @@
+<script type="text/javascript" src="../../lib/jquery.js"></script>
+<script type="text/javascript" src="../../lib/jquery-ui.min.js"></script>
+<script type="text/javascript" src="jquery-example-plugin.js"></script>
+
+
+<div>
+</div>
+
+<script>
+  (function($) {
+      var origAppend = $.fn.append;
+
+      $.fn.append = function () {
+          return origAppend.apply(this, arguments).trigger("append");
+      };
+  })(jQuery);
+
+  $("div").bind("append", function() { alert('Hello, world!'); });
+
+  $("div").append("<span>");
+</script>

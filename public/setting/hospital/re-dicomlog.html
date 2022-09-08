@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+    <title>Rad Connext</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  	<script type="text/javascript" src="../../lib/jquery.js"></script>
+  	<script type="text/javascript" src="../../lib/jquery-ui.min.js"></script>
+  	<script type="text/javascript" src="../../lib/jquery.loading.min.js"></script>
+    <script type="text/javascript" src="../../lib/notify.min.js"></script>
+    <link rel='stylesheet' href='../../lib/jquery-ui.min.css' />
+    <link rel='stylesheet' href='../../stylesheets/style.css' />
+  </head>
+  <body>
+    <div id="input-div">
+      <div>
+        <label>HospitalID:</label>
+        <input type="text" id="HospitalID"/>
+      </div>
+    	<div>
+        <label>StudyID:</label>
+        <input type="text" id="StudYID"/>
+      </div>
+      <div>
+        <input type="button" id="ReDicomCmd" value="Re-Dicom Log"/>
+      </div>
+    </div>
+  </body>
+</html>
+<style>
+
+</style>
+<script type="text/javascript">
+
+  console.log(localStorage.getItem('token'));
+
+  $.ajaxSetup({
+    beforeSend: function(xhr) {
+      xhr.setRequestHeader('Authorization', localStorage.getItem('token'));
+    }
+  });
+  let userdata = JSON.parse(localStorage.getItem('userdata'));
+  console.log(userdata);
+
+  function doGetOrthancURL(hospitalId){
+    let orthancUrl = 'http://150.95.26.106';
+    if (hospitalId == 2){
+      orthancUrl += ':8043';
+    } else if (hospitalId == 3){
+      orthancUrl += ':9044';
+    } else if (hospitalId == 4){
+      orthancUrl += ':9042';
+    } else if (hospitalId == 5){
+      orthancUrl += ':9043';
+    }
+    return orthancUrl;
+  }
+
+  function doCallLoadStudyTags(hospitalId, studyId){
+    return new Promise(async function(resolve, reject) {
+      let rqBody = '{"Level": "Study", "Expand": true, "Query": {"PatientName":"TEST"}}';
+      let orthancUri = '/studies/' + studyId;
+	  	let params = {method: 'get', uri: orthancUri, body: rqBody, hospitalId: hospitalId};
+      let callLoadUrl = '/api/orthancproxy/find'
+      $.post(callLoadUrl, params).then((response) => {
+        resolve(response);
+      });
+    });
+  }
+
+  function doReStructureDicom(hospitalId, studyId, dicom){
+    return new Promise(async function(resolve, reject) {
+      let params = {hospitalId: hospitalId, resourceId: studyId, resourceType: "study", dicom: dicom};
+      let restudyUrl = '/api/dicomtransferlog/add';
+      $.post(restudyUrl, params).then((response) => {
+        resolve(response);
+      });
+    });
+  }
+
+  $('#ReDicomCmd').on('click', async (evt)=>{
+    let hospitalID = $('#HospitalID').val();
+    let studyID = $('#StudYID').val();
+    if ((hospitalID) && (Number(hospitalID) > 0 )) {
+      if ((studyID) && (studyID !== '')){
+        let studyTags = await doCallLoadStudyTags(hospitalID, studyID);
+        console.log(studyTags);
+        let reStudyRes = await doReStructureDicom(hospitalID, studyID, studyTags);
+        console.log(reStudyRes);
+      } else {
+        alert('StudyID!!!')
+      }
+    } else {
+      alert('HospitalID!!!')
+    }
+  });
+</script>

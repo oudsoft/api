@@ -1,0 +1,171 @@
+/* Header/Blog Title */
+.wrapper {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  /* border: 3px solid blue; */
+}
+
+.table-view {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.row {
+  display: table-row;
+  width: 100%;
+}
+
+/* Create three unequal columns that floats next to each other */
+.column {
+  display: table-cell;
+  vertical-align: top;
+}
+
+/* Left and right column */
+.side {
+  width: 25%;
+	min-height: 320px;
+  /*
+  border: 1px solid black;
+  background-color: rgba(0, 0, 255, 0.85);
+  transition: all .6s ease-in-out;
+  */
+
+  background-color: #2261AE;
+  color: white;
+  position: fixed;
+  overflow-y: hide;
+}
+
+/* Middle column */
+.middle {
+  width: 75%;
+	min-height: 320px;
+  /*
+  padding-left: 0px;
+  */
+  background-color: #F2F2F2;
+}
+.titlepageview{
+  position: fixed;
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  z-index: 31;
+}
+.titlepage {
+  display: table-row;
+  width: 100%;
+  height: auto;
+  padding: 0px;
+
+  background-color: #184175;
+  color: white;
+  /*
+  opacity: 0.4;
+  filter:alpha(opacity="40");
+  */
+}
+.title-content{
+  /*
+  display: table-cell;
+  vertical-align: middle;
+  */
+  width: 30%;
+  text-align: left;
+  min-height: 40px;
+  padding-left: 10px;
+}
+.title-user-info{
+  /*
+  display: table-cell;
+  vertical-align: middle;
+  */
+  width: 30%;
+  text-align: right;
+  min-height: 40px;
+}
+.hosplital-name{
+  /*
+  position: relative;
+  display: inline-block;
+  */
+  text-align: left;
+  width: 50%;
+}
+/*
+.displayname-control{
+  position: relative;
+  display: inline-block;
+  margin-left: 20px;
+}
+*/
+.user-displayname{
+  /*
+  position: relative;
+  */
+  width: 50%;
+  text-align: right;
+}
+.logout-cmd-hide{
+  position: absolute;
+  display: none;
+  z-index: 2;
+  border-radius: 8px;
+  background-color: #184175;
+  padding: 4px;
+  text-align: center;
+}
+#UserDisplayNameBox{
+  text-decoration: underline;
+  cursor: pointer;
+}
+#LogoutIcon{
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  top: 4px;
+}
+#LogoutCmd{
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-left: 6px;
+}
+.mainfull {
+  margin-top: 70px;
+  min-height: 780px;
+  width: 100%;
+  /*
+  font-family: THSarabunNew;
+  font-size: 24px;
+  font-weight: normal;
+  */
+}
+
+/*
+.title-content {
+  padding: 3px;
+  height: 44px;
+  line-height:0.2;
+  background: #ddd;
+  width: 100%;
+  position: relative;
+  z-index: 11;
+}
+*/
+/* Footer */
+.footer {
+  padding: 5px;
+  text-align: center;
+  background: #ddd;
+  margin-top: 10px;
+  /*
+  font-size: 24px;
+  font-family: THSarabunNew;
+  font-weight: normal;
+  */
+}

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+   <meta charset="utf-8">
+   <link href="../favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>My Share Home</title>
+   <script type="text/javascript" src="../../lib/jquery.js"></script>
+   <script type="text/javascript" src="../../lib/jquery-ui.min.js"></script>
+   <link href="../lib/jquery-ui.min.css" rel="stylesheet">
+   <script type="text/javascript" src="./image-tools.js"></script>
+
+   <script type="text/javascript" src="https://radconnext.tech/lib/fabric.js"></script>
+   <link href="https://radconnext.tech/lib/tui-image-editor.min.css" rel="stylesheet">
+   <link href="https://radconnext.tech/lib/tui-color-picker.css" rel="stylesheet">
+   <script type="text/javascript" src="https://radconnext.tech/lib/tui-code-snippet.min.js"></script>
+   <script type="text/javascript" src="https://radconnext.tech/lib/tui-color-picker.js"></script>
+   <script type="text/javascript" src="https://radconnext.tech/lib/tui-image-editor.min.js"></script>
+   <script type="text/javascript" src="https://radconnext.tech/lib/simpleUpload.min.js"></script>
+   <script type="text/javascript" src="https://radconnext.tech/setting/plugin/jqury-readystate-plugin.js"></script>
+   <link rel="stylesheet" href="https://radconnext.tech/stylesheets/style.css" type="text/css" />
+
+  <script type="text/javascript" src="https://radconnext.tech/shop/lib/imageeditor.js?tt=mo9i456f"></script>
+
+  <!--
+  <script type="text/javascript" src="/shop/lib/imageeditor.js?tt=mo9i456f"></script>
+  -->
+  <script type="text/javascript" src="../lib/plugin/jquery-radutil-plugin.js"></script>
+   <style>
+     @font-face { font-family: EkkamaiStandard; src: url("../../font/EkkamaiStandard-Light.ttf");}
+     body {font-family: EkkamaiStandard;}
+   </style>
+ </head>
+ <body>
+
+ </body>
+</html>
+<script type="text/javascript">
+  const cropImageBox = $('<div></div>').css({'position': 'relative', 'width': '100%', 'border': '2px solid grey', 'background-color': '#ddd', 'text-align': 'left'});
+
+
+  const cropOption = {cropWidth: 400, cropHeight: 620, scale: 1.0, waterMarkText: 'ท่าศาสาเมืองน่าอยู่', waterMarkFontSize: 42, waterMarkFontColor:'white'};
+  const myCropImageBox = $(cropImageBox).imagecrop(cropOption);
+
+  $('body').append($(cropImageBox));
+
+  document.onpaste = function(pasteEvent) {
+    //console.log(pasteEvent);
+    let item = pasteEvent.clipboardData.items[0];
+    //console.log(item);
+    if (item.type.indexOf("image") === 0) {
+      let blob = item.getAsFile();
+      let reader = new FileReader();
+      reader.onload = function(event) {
+        myCropImageBox.doCreateImageTools(event.target.result)
+      };
+      reader.readAsDataURL(blob);
+    }
+  }
+
+  document.addEventListener("updatestamptext", (evt)=>{
+    let trigerData = evt.detail.data;
+    let waterMarkTextInput = undefined;
+    let waterMarkFontSizeInput = undefined;
+    let waterMarkFontColorInput = undefined;
+    let radAlertMsg = doCreateSlidePlayOptionForm(trigerData, (wmTextInput, wmFontSizeInput, wmFontColorInput)=>{
+      waterMarkTextInput = $(wmTextInput);
+      waterMarkFontSizeInput = $(wmFontSizeInput);
+      waterMarkFontColorInput = $(wmFontColorInput);
+    });
+    const radalertoption = {
+      title: 'ตั้งค่าข้อความลายน้ำ',
+      msg: $(radAlertMsg),
+      width: '420px',
+      onOk: function(evt) {
+        let waterMarkTextValue = $(waterMarkTextInput).val();
+        if (waterMarkTextValue !== '') {
+          $(waterMarkFontSizeInput).css({'border': ''});
+          let waterMarkFontSizeValue = $(waterMarkFontSizeInput).val();
+          if (waterMarkFontSizeValue !== '') {
+            $(waterMarkFontSizeInput).css({'border': ''});
+            let waterMarkFontColorValue = $(waterMarkFontColorInput).val();
+            if (waterMarkFontColorValue !== '') {
+              $(waterMarkFontColorInput).css({'border': ''});
+              let newValue = {waterMarkText: waterMarkTextValue, waterMarkFontSize: Number(waterMarkFontSizeValue), waterMarkFontColor: waterMarkFontColorValue};
+              myCropImageBox.doSetupWaterMarkOption(newValue);
+              radAlertBox.closeAlert();
+            } else {
+              $(waterMarkFontColorInput).css({'border': '1px solid red'});
+            }
+          } else {
+            $(waterMarkFontSizeInput).css({'border': '1px solid red'});
+          }
+        } else {
+          $(waterMarkFontSizeInput).css({'border': '1px solid red'});
+        }
+      },
+      onCancel: function(evt) {
+        radAlertBox.closeAlert();
+      }
+    }
+    let radAlertBox = $('body').radalert(radalertoption);
+    $(radAlertBox.cancelCmd).hide();
+  });
+
+  const doCreateSlidePlayOptionForm = function(trigerData, callback){
+    //{waterMarkText: settings.waterMarkText, waterMarkFontSize: settings.waterMarkFontSize, waterMarkFontColor: settings.waterMarkFontColor};
+    let wrapperBox = $('<div></div>');
+    let closeOrderTable = $('<table width="100%" cellspacing="0" cellpadding="0" border="0"></table>');
+    let dataRow = $('<tr></tr>').css({'height': '40px'});
+    $(dataRow).append($('<td width="40%" align="left"><b>Text</b></td>'));
+    let waterMarkTextInput = $('<input id="waterMarkText" type="text"/>').css({'width': '180px'}).val(trigerData.waterMarkText);
+    let waterMarkTextInputCell = $('<td width="*" align="left"></td>');
+    $(waterMarkTextInputCell).append($(waterMarkTextInput));
+    $(dataRow).append($(waterMarkTextInputCell));
+    $(closeOrderTable).append($(dataRow));
+    dataRow = $('<tr></tr>').css({'height': '40px'});
+    $(dataRow).append($('<td width="50%" align="left"><b>Font Size</b></td>'));
+    let waterMarkFontSizeInput = $('<input id="WaterMarkFontSize" type="number"/>').css({'width': '40px'}).val(trigerData.waterMarkFontSize);
+    let waterMarkFontSizeInputCell = $('<td align="left"></td>');
+    $(waterMarkFontSizeInputCell).append($(waterMarkFontSizeInput)).append($('<span> px</span>'));
+    $(dataRow).append($(waterMarkFontSizeInputCell));
+    $(closeOrderTable).append($(dataRow));
+    dataRow = $('<tr></tr>').css({'height': '40px'});
+    $(dataRow).append($('<td width="50%" align="left"><b>Font Color</b></td>'));
+    let waterMarkFontColorInput = $('<input id="WaterMarkFontColor" type="text"/>').css({'width': '80px'}).val(trigerData.waterMarkFontColor);
+    let waterMarkFontColorInputCell = $('<td align="left"></td>');
+    $(waterMarkFontColorInputCell).append($(waterMarkFontColorInput));
+    $(dataRow).append($(waterMarkFontColorInputCell));
+    $(closeOrderTable).append($(dataRow));
+    callback(waterMarkTextInput, waterMarkFontSizeInput, waterMarkFontColorInput);
+    return $(wrapperBox).append($(closeOrderTable));
+  }
+</script>

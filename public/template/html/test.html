@@ -1,0 +1,107 @@
+<html>
+<head>
+<style>
+body {
+  font-family: 'Kanit', sans-serif;
+  font-size: 50px;
+}
+.black {
+    border-style: solid;
+    border-width: 1px;
+    border-collapse: collapse;
+    padding: 3px;
+}
+
+.tbl { display: table; }
+.row { display: table-row; }
+.cel { display: table-cell; }
+.cpt {
+    display: table-caption;
+    text-align: center;
+    position: fixed;
+}
+.thc {
+    display: table-cell;
+    background-color:#f2e8da;
+    text-align: center;
+    font-weight: bold;
+}
+
+.row:nth-child(odd)  { background-color: #def; }
+.row:nth-child(even) { background-color: #fff; }
+.row:hover {background-color:#f2e8da; }
+
+.tbody { display: table-row-group }
+.thead { display: table-header-group; position: fixed; }
+
+input {
+    width: 100%;
+    background-color: inherit;
+}
+</style>
+</head>
+<body>
+<div class="tbl black">
+    <!--
+    <div class="cpt"><input type="search" placeholder="search me"/></div>
+    -->
+    <div class="thead">
+        <div class="row black">
+            <div class="thc black">name</div>
+            <div class="thc black">form</div>
+        </div>
+    </div>
+    <div class="tbody" id="data">
+        <form class="row black">
+            <div class="cel black">snake<input type="hidden" name="cartitem" value="55"></div>
+            <div class="cel black"><input name="count" value="1"/></div>
+        </form>
+        <form class="row black">
+            <div class="cel black">snake<input type="hidden" name="cartitem" value="55"></div>
+            <div class="cel black"><input name="count" value="2"/></div>
+        </form>
+        <form class="row black">
+            <div class="cel black">snake<input type="hidden" name="cartitem" value="55"></div>
+            <div class="cel black"><input name="count" value="3"/></div>
+        </form>
+        <form class="row black">
+            <div class="cel black">snake<input type="hidden" name="cartitem" value="55"></div>
+            <div class="cel black"><input name="count" value="4"/></div>
+        </form>
+        <form class="row black">
+            <div class="cel black">snake<input type="hidden" name="cartitem" value="55"></div>
+            <div class="cel black"><input name="count" value="5"/></div>
+        </form>
+        <form class="row black">
+            <div class="cel black">snake<input type="hidden" name="cartitem" value="55"></div>
+            <div class="cel black"><input name="count" value="6"/></div>
+        </form>
+        <form class="row black">
+            <div class="cel black">snake<input type="hidden" name="cartitem" value="55"></div>
+            <div class="cel black"><input name="count" value="7"/></div>
+        </form>
+        <form class="row black">
+            <div class="cel black">snake<input type="hidden" name="cartitem" value="55"></div>
+            <div class="cel black"><input name="count" value="8"/></div>
+        </form>
+        <form class="row black">
+            <div class="cel black">snake<input type="hidden" name="cartitem" value="55"></div>
+            <div class="cel black"><input name="count" value="9"/></div>
+        </form>
+        <form class="row black">
+            <div class="cel black">snake<input type="hidden" name="cartitem" value="55"></div>
+            <div class="cel black"><input name="count" value="10"/></div>
+        </form>
+        <form class="row black">
+            <div class="cel black">snake<input type="hidden" name="cartitem" value="55"></div>
+            <div class="cel black"><input name="count" value="11"/></div>
+        </form>
+        <form class="row black">
+            <div class="cel black">snake<input type="hidden" name="cartitem" value="55"></div>
+            <div class="cel black"><input name="count" value="12"/></div>
+        </form>
+
+    </div>
+</div>
+</body>
+</html>

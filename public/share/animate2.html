@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link href="../favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Say Hello</title>
+    <script type="text/javascript" src="../lib/jquery.js"></script>
+    <script type="text/javascript" src="../lib/jquery-ui.min.js"></script>
+    <link href="../lib/jquery-ui.min.css" rel="stylesheet">
+    <!--
+  	<script type="text/javascript" src="bundle.js"></script>
+    -->
+  </head>
+  <body>
+    <div id="wrapper">
+      <div id="app">
+        <h1>คำเตือน</h1>
+        <h2>เพื่อความปลอดภัยของตัวเองและผู้อื่น</h2>
+        <h2>มองซ้ายมองขวาทุกครั้งก่อนขึ้นถนน</h2
+      </div>
+    </div>
+  </body>
+</html>
+
+<style>
+  @font-face { font-family: EkkamaiStandard; src: url("../font/EkkamaiStandard-Light.ttf");}
+  @keyframes blink-animation {
+    to {
+      visibility: hidden;
+    }
+  }
+  @-webkit-keyframes blink-animation {
+    to {
+      visibility: hidden;
+    }
+  }
+  #wrapper {
+    position: relative;
+    width: 100%;
+    background: rgb(0, 0, 0);
+    height: calc(100vh - 0px);
+    box-sizing: border-box;
+  }
+  #app {
+    position: absolute;
+    width: 100%;
+    margin-top: 40vh;
+    padding: 2px;
+    text-align: center;
+    font-family: 'EkkamaiStandard';
+    color: white;
+  }
+  .blink {
+    animation: blink-animation 1s steps(5, start) infinite;
+    -webkit-animation: blink-animation 1s steps(5, start) infinite;
+  }
+</style>
+
+<script type="text/javascript">
+  $( document ).ready(function() {
+    $('#app').hide();
+    $('#wrapper').on('click', (evt)=>{
+      $('#app').addClass('blink');
+      $('#app').show();
+      console.log(document.getElementById("wrapper").offsetHeight);
+      console.log(document.getElementById("app").offsetHeight);
+    });
+    console.log(document.getElementById("wrapper").offsetHeight);
+    console.log(document.getElementById("app").offsetHeight);
+  });
+</script>
